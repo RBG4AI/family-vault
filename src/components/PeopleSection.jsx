@@ -13,9 +13,16 @@ const initials = (name = '') =>
     .map((part) => part[0].toUpperCase())
     .join('') || '?';
 
-const linkedFor = (personId) => {
-  const buckets = ['credentials', 'emails', 'banking', 'cards', 'government', 'insurance', 'investments', 'vehicles', 'properties', 'notes', 'vitals'];
-  return buckets.flatMap((key) => (storage.get(key) || []).filter((item) => item.personId === personId).map((item) => ({ ...item, _kind: key })));
+const PERSON_BUCKETS = ['credentials', 'emails', 'banking', 'cards', 'government', 'insurance', 'investments', 'vehicles', 'properties', 'notes', 'vitals'];
+
+const linkedFor = (personId) =>
+  PERSON_BUCKETS.flatMap((key) => (storage.get(key) || []).filter((item) => item.personId === personId).map((item) => ({ ...item, _kind: key })));
+
+const unlinkPerson = (personId) => {
+  PERSON_BUCKETS.forEach((key) => {
+    const items = storage.get(key) || [];
+    storage.set(key, items.map((item) => (item.personId === personId ? { ...item, personId: '' } : item)));
+  });
 };
 
 const PeopleSection = () => {
@@ -72,7 +79,7 @@ const PeopleSection = () => {
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-white font-semibold truncate">{person.name}</h3>
-                  <p className="text-white/45 text-sm truncate">{person.relation || 'Family'}{person.birthday ? ` · ${person.birthday}` : ''}</p>
+                  <p className="text-white/45 text-sm truncate">{person.relation || t('nav.family')}{person.birthday ? ` · ${person.birthday}` : ''}</p>
                 </div>
               </div>
             </motion.button>
@@ -87,16 +94,16 @@ const PeopleSection = () => {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h2 className="text-2xl font-display text-white">{selectedPerson.name}</h2>
-                <p className="text-white/50 text-sm">{selectedPerson.relation || 'Family member'}</p>
+                <p className="text-white/50 text-sm">{selectedPerson.relation || t('people.familyMember')}</p>
               </div>
               <button className="text-sm text-cyan-300" onClick={() => { setEdit(selectedPerson); setOpen(true); }}>{t('common.edit')}</button>
             </div>
-            <p className="text-white/40 text-sm mb-4">{linked.length} linked records in this vault</p>
+            <p className="text-white/40 text-sm mb-4">{t('people.linkedCount', { count: linked.length })}</p>
             <div className="space-y-2">
-              {linked.length === 0 && <p className="text-white/40 text-sm">Nothing linked yet. Assign this member when adding a login or ID.</p>}
+              {linked.length === 0 && <p className="text-white/40 text-sm">{t('people.nothingLinked')}</p>}
               {linked.map((item) => (
                 <div key={item.id} className="bg-white/5 rounded-xl px-3 py-2 text-sm text-white/80">
-                  {item._kind} · {item.name || item.appName || item.documentType || item.title || item.registrationNumber || 'Record'}
+                  {t(`nav.${item._kind}`)} · {item.name || item.appName || item.documentType || item.title || item.registrationNumber || t('empty.addItem')}
                 </div>
               ))}
             </div>
@@ -105,6 +112,7 @@ const PeopleSection = () => {
                 <button
                   className="text-sm text-rose-300"
                   onClick={() => {
+                    unlinkPerson(selectedPerson.id);
                     const next = people.filter((person) => person.id !== selectedPerson.id);
                     setPeople(next);
                     storage.set('people', next);
@@ -112,7 +120,7 @@ const PeopleSection = () => {
                     setConfirmDelete(false);
                   }}
                 >
-                  Confirm {t('common.delete')}
+                  {t('people.confirmDelete')}
                 </button>
               ) : (
                 <button className="text-sm text-white/40 hover:text-rose-300" onClick={() => setConfirmDelete(true)}>

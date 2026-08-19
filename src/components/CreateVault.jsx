@@ -12,7 +12,8 @@ const CreateVault = ({ onCreate, onBack, busy, error }) => {
   const [kind, setKind] = useState('family');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [show, setShow] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [localError, setLocalError] = useState('');
 
   const handleSubmit = (event) => {
@@ -57,7 +58,7 @@ const CreateVault = ({ onCreate, onBack, busy, error }) => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="mt-2 field"
-            placeholder="Family"
+            placeholder={t('create.family')}
             autoFocus
           />
         </label>
@@ -84,14 +85,19 @@ const CreateVault = ({ onCreate, onBack, busy, error }) => {
           <span className="text-sm text-white/70">{t('create.password')}</span>
           <div className="relative mt-2">
             <input
-              type={show ? 'text' : 'password'}
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="field pr-12"
               autoComplete="new-password"
             />
-            <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40">
-              {show ? <EyeOff size={18} /> : <Eye size={18} />}
+            <button
+              type="button"
+              aria-label={showPassword ? t('common.hidePassword') : t('common.showPassword')}
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
           <PasswordStrengthMeter password={password} />
@@ -99,13 +105,23 @@ const CreateVault = ({ onCreate, onBack, busy, error }) => {
 
         <label className="block">
           <span className="text-sm text-white/70">{t('create.confirm')}</span>
-          <input
-            type={show ? 'text' : 'password'}
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            className="mt-2 field"
-            autoComplete="new-password"
-          />
+          <div className="relative mt-2">
+            <input
+              type={showConfirm ? 'text' : 'password'}
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              className="field pr-12"
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              aria-label={showConfirm ? t('common.hideConfirm') : t('common.showConfirm')}
+              onClick={() => setShowConfirm(!showConfirm)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40"
+            >
+              {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
         </label>
 
         {(localError || error) && <p className="text-rose-300 text-sm">{localError || error}</p>}

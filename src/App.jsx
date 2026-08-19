@@ -13,11 +13,13 @@ import CredentialsSection from './components/CredentialsSection';
 import PeopleSection from './components/PeopleSection';
 import VitalsSection from './components/VitalsSection';
 import Settings from './components/Settings';
-import QuickActions from './components/QuickActions';
 import OfflineIndicator from './components/OfflineIndicator';
 import AmbientBackground from './components/AmbientBackground';
 import { storage } from './utils/storage';
 import { useI18n } from './context/I18nContext';
+import { applyStoredTheme } from './components/ThemeToggle';
+
+applyStoredTheme();
 
 function App() {
   const vault = useVaultContext();
@@ -64,7 +66,12 @@ function App() {
   if (vault.phase === 'create') {
     return (
       <AmbientBackground>
-        <CreateVault onCreate={vault.handleCreate} onBack={vault.backToList} busy={vault.busy} error={vault.error} />
+        <CreateVault
+          onCreate={vault.handleCreate}
+          onBack={vault.vaults.length ? vault.backToList : null}
+          busy={vault.busy}
+          error={vault.error}
+        />
       </AmbientBackground>
     );
   }
@@ -128,20 +135,13 @@ function App() {
     }
   };
 
-  const handleQuickAction = (actionId) => {
-    if (actionId === 'add-credential') setActiveSection('credentials');
-    if (actionId === 'search') setActiveSection('credentials');
-    if (actionId === 'export') setActiveSection('settings');
-    if (actionId === 'security-check') setActiveSection('dashboard');
-  };
-
   return (
     <AmbientBackground>
       <div className="min-h-screen flex">
         <OfflineIndicator />
         {secondsLeft !== null && (
           <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-amber-300 text-dark-900 px-4 py-2 rounded-full text-sm font-medium">
-            Locking in {secondsLeft}s
+            {t('lock.soon', { seconds: secondsLeft })}
           </div>
         )}
         <Sidebar
@@ -150,7 +150,7 @@ function App() {
           onLock={vault.lock}
           vaultName={vault.meta?.name}
         />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto pb-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeSection}
@@ -164,7 +164,6 @@ function App() {
             </motion.div>
           </AnimatePresence>
         </main>
-        <QuickActions onAction={handleQuickAction} />
       </div>
     </AmbientBackground>
   );

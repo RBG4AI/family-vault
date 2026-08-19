@@ -20,7 +20,7 @@ const Dashboard = () => {
     { title: t('nav.people'), value: people.length, icon: Users, tint: 'from-cyan-400 to-blue-500' },
     { title: t('nav.credentials'), value: credentials.length, icon: Key, tint: 'from-violet-400 to-fuchsia-500' },
     { title: t('nav.banking'), value: banking.length, icon: CreditCard, tint: 'from-emerald-400 to-teal-500' },
-    { title: t('dash.attention'), value: renewals.filter((item) => item.days <= 0).length, icon: AlertTriangle, tint: 'from-amber-400 to-orange-500' },
+    { title: t('dash.attention'), value: renewals.length, icon: AlertTriangle, tint: 'from-amber-400 to-orange-500' },
   ];
 
   const barData = investments.map((inv) => ({
@@ -31,7 +31,7 @@ const Dashboard = () => {
   return (
     <div className="p-4 md:p-8 mt-12 md:mt-0 space-y-6">
       <div>
-        <p className="text-xs tracking-[0.22em] uppercase text-cyan-300/70 mb-2">Family Vault</p>
+        <p className="text-xs tracking-[0.22em] uppercase text-cyan-300/70 mb-2">{t('dash.eyebrow')}</p>
         <h1 className="font-display text-3xl md:text-5xl text-white leading-tight">{t('dash.title')}</h1>
         <p className="text-white/45 mt-3 max-w-xl">{t('dash.subtitle')}</p>
       </div>
@@ -70,7 +70,7 @@ const Dashboard = () => {
                   <p className="text-white/40 text-xs">{item.subtitle} · {item.category}</p>
                 </div>
                 <span className={`text-xs font-medium ${item.days < 0 ? 'text-rose-300' : item.days <= 14 ? 'text-amber-300' : 'text-cyan-300'}`}>
-                  {item.days < 0 ? `${Math.abs(item.days)}d overdue` : `${item.days}d`}
+                  {item.days < 0 ? t('dash.overdue', { days: Math.abs(item.days) }) : t('dash.daysLeft', { days: item.days })}
                 </span>
               </div>
             ))}
@@ -94,16 +94,22 @@ const Dashboard = () => {
 
       <div className="glass-panel rounded-3xl p-6">
         <h3 className="text-white font-medium mb-4">{t('nav.investments')}</h3>
-        <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={barData.length ? barData : [{ name: '—', value: 0 }]}>
-            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
-            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
-            <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, color: '#fff' }} />
-            <Bar dataKey="value" fill="#67e8f9" radius={[8, 8, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-        {totalInvestmentValue > 0 && (
-          <p className="text-white/40 text-sm mt-3">₹{(totalInvestmentValue / 1000).toFixed(1)}K recorded</p>
+        {barData.length === 0 ? (
+          <p className="text-white/40 text-sm">{t('dash.noInvestments')}</p>
+        ) : (
+          <>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={barData}>
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, color: '#fff' }} />
+                <Bar dataKey="value" fill="#67e8f9" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+            {totalInvestmentValue > 0 && (
+              <p className="text-white/40 text-sm mt-3">{t('dash.recorded', { value: (totalInvestmentValue / 1000).toFixed(1) })}</p>
+            )}
+          </>
         )}
       </div>
 

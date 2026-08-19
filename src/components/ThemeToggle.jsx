@@ -1,53 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Moon, Palette, Sun } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Sun, Moon, Palette } from 'lucide-react';
+import { useI18n } from '../context/I18nContext';
+
+const ACCENTS = {
+  blue: '#22d3ee',
+  purple: '#a855f7',
+  green: '#34d399',
+  orange: '#fb923c',
+};
+
+const applyTheme = (theme, accent) => {
+  const root = document.documentElement;
+  root.classList.toggle('light', theme === 'light');
+  root.classList.toggle('dark', theme !== 'light');
+  root.style.setProperty('--accent-color', ACCENTS[accent] || ACCENTS.blue);
+  root.style.colorScheme = theme === 'light' ? 'light' : 'dark';
+};
+
+export const applyStoredTheme = () => {
+  try {
+    applyTheme(localStorage.getItem('vault_theme') || 'dark', localStorage.getItem('vault_accent') || 'blue');
+  } catch {
+    applyTheme('dark', 'blue');
+  }
+};
 
 const ThemeToggle = () => {
-  const [theme, setTheme] = useState('dark');
-  const [accentColor, setAccentColor] = useState('blue');
-
-  const themes = [
-    { id: 'dark', name: 'Dark', icon: Moon },
-    { id: 'light', name: 'Light', icon: Sun }
-  ];
-
-  const accents = [
-    { id: 'blue', name: 'Blue', color: 'bg-blue-500' },
-    { id: 'purple', name: 'Purple', color: 'bg-purple-500' },
-    { id: 'green', name: 'Green', color: 'bg-green-500' },
-    { id: 'orange', name: 'Orange', color: 'bg-orange-500' }
-  ];
+  const { t } = useI18n();
+  const [theme, setTheme] = useState(() => localStorage.getItem('vault_theme') || 'dark');
+  const [accentColor, setAccentColor] = useState(() => localStorage.getItem('vault_accent') || 'blue');
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('vault_theme') || 'dark';
-    const savedAccent = localStorage.getItem('vault_accent') || 'blue';
-    setTheme(savedTheme);
-    setAccentColor(savedAccent);
-    
-    document.documentElement.className = savedTheme;
-    document.documentElement.style.setProperty('--accent-color', getAccentValue(savedAccent));
-  }, []);
+    applyTheme(theme, accentColor);
+  }, [theme, accentColor]);
 
-  const getAccentValue = (accent) => {
-    const colors = {
-      blue: '#3b82f6',
-      purple: '#8b5cf6',
-      green: '#10b981',
-      orange: '#f59e0b'
-    };
-    return colors[accent];
+  const changeTheme = (next) => {
+    setTheme(next);
+    localStorage.setItem('vault_theme', next);
   };
 
-  const changeTheme = (newTheme) => {
-    setTheme(newTheme);
-    localStorage.setItem('vault_theme', newTheme);
-    document.documentElement.className = newTheme;
-  };
-
-  const changeAccent = (newAccent) => {
-    setAccentColor(newAccent);
-    localStorage.setItem('vault_accent', newAccent);
-    document.documentElement.style.setProperty('--accent-color', getAccentValue(newAccent));
+  const changeAccent = (next) => {
+    setAccentColor(next);
+    localStorage.setItem('vault_accent', next);
   };
 
   return (
@@ -55,44 +50,45 @@ const ThemeToggle = () => {
       <div>
         <h4 className="text-white font-medium mb-3 flex items-center gap-2">
           <Palette className="w-5 h-5" />
-          Theme
+          {t('settings.theme')}
         </h4>
         <div className="flex gap-2">
-          {themes.map((t) => {
-            const Icon = t.icon;
+          {[
+            { id: 'dark', name: t('settings.dark'), icon: Moon },
+            { id: 'light', name: t('settings.light'), icon: Sun },
+          ].map((item) => {
+            const Icon = item.icon;
             return (
               <motion.button
-                key={t.id}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => changeTheme(t.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
-                  theme === t.id 
-                    ? 'bg-primary-600 text-white' 
-                    : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
+                key={item.id}
+                type="button"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => changeTheme(item.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl ${
+                  theme === item.id ? 'bg-white/15 text-white' : 'bg-white/5 text-white/50 hover:text-white'
                 }`}
               >
                 <Icon size={16} />
-                {t.name}
+                {item.name}
               </motion.button>
             );
           })}
         </div>
       </div>
-
       <div>
-        <h4 className="text-white font-medium mb-3">Accent Color</h4>
+        <h4 className="text-white font-medium mb-3">{t('settings.accent')}</h4>
         <div className="flex gap-2">
-          {accents.map((accent) => (
+          {Object.entries(ACCENTS).map(([id, color]) => (
             <motion.button
-              key={accent.id}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => changeAccent(accent.id)}
-              className={`w-8 h-8 rounded-full ${accent.color} ${
-                accentColor === accent.id ? 'ring-2 ring-white ring-offset-2 ring-offset-dark-800' : ''
-              }`}
-              title={accent.name}
+              key={id}
+              type="button"
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => changeAccent(id)}
+              aria-label={id}
+              style={{ backgroundColor: color }}
+              className={`w-8 h-8 rounded-full ${accentColor === id ? 'ring-2 ring-white ring-offset-2 ring-offset-dark-800' : ''}`}
             />
           ))}
         </div>

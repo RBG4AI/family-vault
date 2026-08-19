@@ -10,12 +10,12 @@ export const copySecret = async (text) => {
 
   window.setTimeout(async () => {
     try {
-      const current = await navigator.clipboard.readText();
-      if (current === text) {
-        await navigator.clipboard.writeText('');
+      if (navigator.clipboard.readText) {
+        const current = await navigator.clipboard.readText();
+        if (current === text) await navigator.clipboard.writeText('\u00a0');
       }
     } catch {
-      // Browser blocked clipboard read; leave contents as-is.
+      /* Browser blocked clipboard read. */
     }
   }, COPY_CLEAR_MS);
 

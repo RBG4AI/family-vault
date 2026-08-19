@@ -13,31 +13,33 @@ export const useAutoLogout = (onLogout, timeoutMinutes = 2, enabled = true) => {
       return undefined;
     }
 
+    const timeoutMs = Math.max(1, timeoutMinutes) * 60 * 1000;
+
     const clearTimers = () => {
       if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
       if (warningRef.current) window.clearInterval(warningRef.current);
     };
 
+    const startCountdown = () => {
+      setSecondsLeft(30);
+      warningRef.current = window.setInterval(() => {
+        setSecondsLeft((prev) => {
+          const next = (prev ?? 30) - 1;
+          if (next <= 0) {
+            window.clearInterval(warningRef.current);
+            onLogoutRef.current();
+            return null;
+          }
+          return next;
+        });
+      }, 1000);
+    };
+
     const arm = () => {
       clearTimers();
       setSecondsLeft(null);
-      const timeoutMs = Math.max(1, timeoutMinutes) * 60 * 1000;
-      const warnAt = timeoutMs - 30_000;
-
-      timeoutRef.current = window.setTimeout(() => {
-        warningRef.current = window.setInterval(() => {
-          setSecondsLeft((prev) => {
-            const next = (prev ?? 30) - 1;
-            if (next <= 0) {
-              window.clearInterval(warningRef.current);
-              onLogoutRef.current();
-              return null;
-            }
-            return next;
-          });
-        }, 1000);
-        setSecondsLeft(30);
-      }, Math.max(0, warnAt));
+      const warnAt = Math.max(0, timeoutMs - 30_000);
+      timeoutRef.current = window.setTimeout(startCountdown, warnAt);
     };
 
     const events = ['mousedown', 'keydown', 'touchstart', 'scroll', 'pointerdown'];
@@ -47,7 +49,7 @@ export const useAutoLogout = (onLogout, timeoutMinutes = 2, enabled = true) => {
       if (document.hidden) {
         clearTimers();
         setSecondsLeft(null);
-        timeoutRef.current = window.setTimeout(() => onLogoutRef.current(), 30_000);
+        timeoutRef.current = window.setTimeout(() => onLogoutRef.current(), timeoutMs);
       } else {
         arm();
       }

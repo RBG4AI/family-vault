@@ -66,16 +66,24 @@ const VaultList = ({ vaults, onSelect, onCreate, onImport }) => {
             <span className="text-white/80 font-medium">{t('list.create')}</span>
           </button>
 
-          <label className="w-full flex items-center gap-4 p-4 bg-white/5 rounded-2xl cursor-pointer hover:bg-white/10 transition-colors">
-            <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
-              <FileKey className="w-6 h-6 text-white/50" />
+          <div className="w-full p-4 bg-white/5 rounded-2xl space-y-3">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
+                <FileKey className="w-6 h-6 text-white/50" />
+              </div>
+              <div>
+                <label htmlFor="vault-backup-import" className="text-white/80 font-medium block">{t('list.import')}</label>
+                <p className="text-white/35 text-sm">{t('list.importHint')}</p>
+              </div>
             </div>
-            <div>
-              <span className="text-white/80 font-medium block">{t('list.import')}</span>
-              <span className="text-white/35 text-sm">{t('list.importHint')}</span>
-            </div>
-            <input type="file" accept="application/json,.json" className="hidden" onChange={handleImport} />
-          </label>
+            <input
+              id="vault-backup-import"
+              type="file"
+              accept="application/json,.json"
+              onChange={handleImport}
+              className="block w-full text-sm text-white/70 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-cyan-400/20 file:text-cyan-100"
+            />
+          </div>
           {importError && <p className="text-rose-300 text-sm">{importError}</p>}
         </div>
 

@@ -7,7 +7,7 @@ import { storage } from '../utils/storage';
 import { validateField } from '../utils/validation';
 import { useI18n } from '../context/I18nContext';
 
-const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type }) => {
+const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPersonId }) => {
   const { t } = useI18n();
   const [formData, setFormData] = useState({});
   const [tags, setTags] = useState([]);
@@ -16,14 +16,18 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type }) => {
   const people = storage.get('people') || [];
 
   useEffect(() => {
+    if (!isOpen) return;
+    setFieldError('');
+    setNewTag('');
     if (editData) {
       setFormData(editData);
       setTags(editData.tags || []);
     } else {
-      setFormData({});
+      const linked = defaultPersonId || people[0]?.id || '';
+      setFormData(type !== 'person' && linked ? { personId: linked } : {});
       setTags([]);
     }
-  }, [editData, isOpen]);
+  }, [editData, isOpen, type, defaultPersonId]);
 
   const getFormFields = () => {
     switch (type) {
@@ -191,7 +195,6 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={onClose}
           />
           
           <motion.div
@@ -202,9 +205,11 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type }) => {
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-white">
-                {editData ? 'Edit' : 'Add'} {type.charAt(0).toUpperCase() + type.slice(1)}
+                {t(`modal.${editData ? 'edit' : 'add'}.${type}`)}
               </h2>
               <button
+                type="button"
+                aria-label={t('common.cancel')}
                 onClick={onClose}
                 className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
               >
@@ -221,7 +226,7 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type }) => {
                     onChange={(e) => setFormData({ ...formData, personId: e.target.value })}
                     className="field"
                   >
-                    <option value="" className="bg-dark-800">Not linked</option>
+                    <option value="" className="bg-dark-800">{t('modal.notLinked')}</option>
                     {people.map((person) => (
                       <option key={person.id} value={person.id} className="bg-dark-800">{person.name}</option>
                     ))}
@@ -292,15 +297,15 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type }) => {
               {fieldError && <p className="text-red-400 text-sm">{fieldError}</p>}
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Tags</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">{t('modal.tags')}</label>
                 <div className="flex gap-2 mb-2">
                   <input
                     type="text"
                     value={newTag}
                     onChange={(e) => setNewTag(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-colors"
-                    placeholder="Add tag"
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                    className="flex-1 field py-2"
+                    placeholder={t('modal.addTag')}
                   />
                   <button
                     type="button"

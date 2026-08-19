@@ -3,8 +3,10 @@ import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import PasswordStrengthMeter from './PasswordStrengthMeter';
 import { passwordScore } from '../crypto/vaultCrypto';
+import { useI18n } from '../context/I18nContext';
 
 const RecoveryUnlock = ({ vault, onReset, onBack, busy, error }) => {
+  const { t } = useI18n();
   const [key, setKey] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -13,11 +15,11 @@ const RecoveryUnlock = ({ vault, onReset, onBack, busy, error }) => {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (password.length < 10 || passwordScore(password) < 3) {
-      setLocalError('Choose a stronger master password.');
+      setLocalError(t('recovery.weak'));
       return;
     }
     if (password !== confirm) {
-      setLocalError('Passwords do not match.');
+      setLocalError(t('recovery.mismatch'));
       return;
     }
     setLocalError('');
@@ -33,11 +35,11 @@ const RecoveryUnlock = ({ vault, onReset, onBack, busy, error }) => {
         className="glass-panel rounded-3xl p-8 w-full max-w-md space-y-5"
       >
         <button type="button" onClick={onBack} className="text-white/45 hover:text-white flex items-center gap-2 text-sm">
-          <ArrowLeft size={16} /> Back
+          <ArrowLeft size={16} /> {t('recovery.back')}
         </button>
         <div>
-          <h1 className="font-display text-3xl text-white">Recover {vault?.name}</h1>
-          <p className="text-white/45 text-sm mt-1">Enter the recovery key, then set a new master password.</p>
+          <h1 className="font-display text-3xl text-white">{t('recovery.title', { name: vault?.name || t('nav.vault') })}</h1>
+          <p className="text-white/45 text-sm mt-1">{t('recovery.body')}</p>
         </div>
         <textarea
           value={key}
@@ -49,7 +51,7 @@ const RecoveryUnlock = ({ vault, onReset, onBack, busy, error }) => {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="New master password"
+          placeholder={t('recovery.newPassword')}
           autoComplete="new-password"
           className="field"
         />
@@ -58,13 +60,13 @@ const RecoveryUnlock = ({ vault, onReset, onBack, busy, error }) => {
           type="password"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
-          placeholder="Confirm new password"
+          placeholder={t('recovery.confirm')}
           autoComplete="new-password"
           className="field"
         />
         {(localError || error) && <p className="text-rose-300 text-sm">{localError || error}</p>}
         <button type="submit" disabled={busy} className="w-full btn-primary py-3.5">
-          {busy ? 'Recovering…' : 'Set new password and unlock'}
+          {busy ? t('recovery.busy') : t('recovery.submit')}
         </button>
       </motion.form>
     </div>

@@ -1,47 +1,46 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useI18n } from '../context/I18nContext';
+
+const LEVELS = [
+  { labelKey: 'strength.veryWeak', color: 'bg-red-500' },
+  { labelKey: 'strength.weak', color: 'bg-orange-500' },
+  { labelKey: 'strength.fair', color: 'bg-yellow-500' },
+  { labelKey: 'strength.good', color: 'bg-blue-500' },
+  { labelKey: 'strength.strong', color: 'bg-green-500' },
+];
+
+const scorePassword = (pwd) => {
+  if (!pwd) return 0;
+  let score = 0;
+  if (pwd.length >= 10) score++;
+  if (/[a-z]/.test(pwd)) score++;
+  if (/[A-Z]/.test(pwd)) score++;
+  if (/[0-9]/.test(pwd)) score++;
+  if (/[^A-Za-z0-9]/.test(pwd)) score++;
+  return Math.min(score, 5);
+};
 
 const PasswordStrengthMeter = ({ password }) => {
-  const getStrength = (pwd) => {
-    if (!pwd) return { score: 0, label: '', color: '' };
-    
-    let score = 0;
-    if (pwd.length >= 10) score++;
-    if (/[a-z]/.test(pwd)) score++;
-    if (/[A-Z]/.test(pwd)) score++;
-    if (/[0-9]/.test(pwd)) score++;
-    if (/[^A-Za-z0-9]/.test(pwd)) score++;
-    
-    const levels = [
-      { label: 'Very Weak', color: 'bg-red-500' },
-      { label: 'Weak', color: 'bg-orange-500' },
-      { label: 'Fair', color: 'bg-yellow-500' },
-      { label: 'Good', color: 'bg-blue-500' },
-      { label: 'Strong', color: 'bg-green-500' }
-    ];
-    
-    return { score, ...levels[score] };
-  };
-
-  const strength = getStrength(password);
-  
+  const { t } = useI18n();
   if (!password) return null;
+  const score = scorePassword(password);
+  const level = LEVELS[Math.max(0, Math.min(score, 5) - 1)] || LEVELS[0];
+  const filled = Math.max(score, 1);
 
   return (
     <div className="mt-2">
       <div className="flex gap-1 mb-1">
-        {[1, 2, 3, 4, 5].map((level) => (
+        {[1, 2, 3, 4, 5].map((bar) => (
           <motion.div
-            key={level}
+            key={bar}
             initial={{ scaleX: 0 }}
-            animate={{ scaleX: level <= strength.score ? 1 : 0 }}
-            className={`h-1 flex-1 rounded-full ${
-              level <= strength.score ? strength.color : 'bg-gray-600'
-            }`}
+            animate={{ scaleX: bar <= filled ? 1 : 0 }}
+            className={`h-1 flex-1 rounded-full ${bar <= filled ? level.color : 'bg-white/20'}`}
           />
         ))}
       </div>
-      <p className="text-xs text-gray-400">{strength.label}</p>
+      <p className="text-xs text-white/55">{t(level.labelKey)}</p>
     </div>
   );
 };

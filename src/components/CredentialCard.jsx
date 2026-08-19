@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Copy, Edit, Trash2, Check } from 'lucide-react';
 import { copyToClipboard, storage } from '../utils/storage';
@@ -63,6 +63,12 @@ const CredentialCard = ({ credential, onEdit, onDelete }) => {
   const people = storage.get('people') || [];
   const person = people.find((item) => item.id === credential.personId);
 
+  useEffect(() => {
+    if (!confirmDelete) return undefined;
+    const timer = window.setTimeout(() => setConfirmDelete(false), 4000);
+    return () => window.clearTimeout(timer);
+  }, [confirmDelete]);
+
   const handleCopy = async (text, field) => {
     const success = await copyToClipboard(text);
     if (success) {
@@ -93,7 +99,7 @@ const CredentialCard = ({ credential, onEdit, onDelete }) => {
           <p className="text-white/45 text-xs md:text-sm truncate">{subtitle}</p>
         </div>
         <div className="flex gap-2 shrink-0">
-          <button onClick={() => onEdit(credential)} className="p-2 text-white/40 hover:text-cyan-300 hover:bg-white/5 rounded-lg" aria-label="Edit">
+          <button onClick={() => onEdit(credential)} className="p-2 text-white/40 hover:text-cyan-300 hover:bg-white/5 rounded-lg" aria-label={t('common.edit')}>
             <Edit size={16} />
           </button>
           {confirmDelete ? (
@@ -104,7 +110,7 @@ const CredentialCard = ({ credential, onEdit, onDelete }) => {
               {t('common.delete')}
             </button>
           ) : (
-            <button onClick={() => setConfirmDelete(true)} className="p-2 text-white/40 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg" aria-label="Delete">
+            <button onClick={() => setConfirmDelete(true)} className="p-2 text-white/40 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg" aria-label={t('common.delete')}>
               <Trash2 size={16} />
             </button>
           )}

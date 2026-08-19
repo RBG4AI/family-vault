@@ -7,6 +7,11 @@ const I18nContext = createContext(null);
 const lookup = (dict, path) =>
   path.split('.').reduce((acc, part) => (acc && acc[part] !== undefined ? acc[part] : null), dict);
 
+const interpolate = (text, vars) => {
+  if (!vars || typeof text !== 'string') return text;
+  return text.replace(/\{(\w+)\}/g, (_, name) => (vars[name] !== undefined ? String(vars[name]) : `{${name}}`));
+};
+
 export const I18nProvider = ({ children }) => {
   const [lang, setLangState] = useState(() => {
     try {
@@ -26,7 +31,7 @@ export const I18nProvider = ({ children }) => {
   }, []);
 
   const t = useCallback(
-    (key) => lookup(TRANSLATIONS[lang], key) || lookup(TRANSLATIONS.en, key) || key,
+    (key, vars) => interpolate(lookup(TRANSLATIONS[lang], key) || lookup(TRANSLATIONS.en, key) || key, vars),
     [lang]
   );
 
@@ -44,7 +49,7 @@ export const useI18n = () => {
   return {
     lang: 'en',
     setLang: () => {},
-    t: (key) => lookup(TRANSLATIONS.en, key) || key,
+    t: (key, vars) => interpolate(lookup(TRANSLATIONS.en, key) || key, vars),
     languages: TRANSLATIONS,
   };
 };

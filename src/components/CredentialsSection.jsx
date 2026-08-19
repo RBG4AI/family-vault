@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { storage } from '../utils/storage';
@@ -20,71 +20,86 @@ const FORM_TYPE = {
   properties: 'property',
 };
 
+const itemAmount = (item) => {
+  const raw = item.currentValue ?? item.amountInvested ?? item.sumAssured ?? item.premiumAmount ?? item.creditLimit ?? item.amount;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+};
+
+const itemDate = (item) => item.updatedAt || item.createdAt || item.purchaseDate || item.maturityDate || null;
+
+const inDateRange = (iso, range) => {
+  if (!range || !iso) return !range;
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return false;
+  const days = { week: 7, month: 31, year: 366 }[range];
+  if (!days) return true;
+  return Date.now() - then <= days * 24 * 60 * 60 * 1000;
+};
+
+const inAmountRange = (amount, range) => {
+  if (!range) return true;
+  if (amount === null) return false;
+  if (range === '0-1000') return amount >= 0 && amount <= 1000;
+  if (range === '1000-10000') return amount > 1000 && amount <= 10000;
+  if (range === '10000+') return amount > 10000;
+  return true;
+};
+
 const CredentialsSection = ({ type, title }) => {
   const { t } = useI18n();
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState('All');
+  const [advanced, setAdvanced] = useState({ dateRange: '', amountRange: '' });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
 
+  const loadItems = useCallback(() => {
+    setItems(storage.get(type) || []);
+  }, [type]);
+
   useEffect(() => {
     loadItems();
-  }, [type]);
+    setSearchTerm('');
+    setSelectedTag('All');
+    setAdvanced({ dateRange: '', amountRange: '' });
+  }, [type, loadItems]);
 
   useEffect(() => {
-    // Reload items when returning to tab
     const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        loadItems();
-      }
+      if (!document.hidden) loadItems();
     };
-    
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [type]);
+  }, [loadItems]);
 
   useEffect(() => {
-    filterItems();
-  }, [items, searchTerm, selectedTag]);
-
-  const loadItems = () => {
-    const data = storage.get(type) || [];
-    setItems(data);
-  };
-
-  const filterItems = () => {
     let filtered = items;
-
     if (searchTerm) {
-      filtered = filtered.filter(item =>
-        Object.values(item).some(value =>
-          value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        )
+      const q = searchTerm.toLowerCase();
+      filtered = filtered.filter((item) =>
+        Object.values(item).some((value) => value?.toString().toLowerCase().includes(q))
       );
     }
-
     if (selectedTag !== 'All') {
-      filtered = filtered.filter(item =>
-        item.tags?.includes(selectedTag)
-      );
+      filtered = filtered.filter((item) => item.tags?.includes(selectedTag));
     }
-
+    if (advanced.dateRange) {
+      filtered = filtered.filter((item) => inDateRange(itemDate(item), advanced.dateRange));
+    }
+    if (advanced.amountRange) {
+      filtered = filtered.filter((item) => inAmountRange(itemAmount(item), advanced.amountRange));
+    }
     setFilteredItems(filtered);
-  };
+  }, [items, searchTerm, selectedTag, advanced]);
 
   const handleSave = (data) => {
-    const existingIndex = items.findIndex(item => item.id === data.id);
-    let updatedItems;
-
-    if (existingIndex >= 0) {
-      updatedItems = [...items];
-      updatedItems[existingIndex] = data;
-    } else {
-      updatedItems = [...items, data];
-    }
-
+    const existingIndex = items.findIndex((item) => item.id === data.id);
+    const updatedItems = existingIndex >= 0
+      ? items.map((item, index) => (index === existingIndex ? data : item))
+      : [...items, data];
     setItems(updatedItems);
     storage.set(type, updatedItems);
     setEditData(null);
@@ -96,18 +111,19 @@ const CredentialsSection = ({ type, title }) => {
   };
 
   const handleDelete = (id) => {
-    const updatedItems = items.filter(item => item.id !== id);
+    const updatedItems = items.filter((item) => item.id !== id);
     setItems(updatedItems);
     storage.set(type, updatedItems);
   };
 
   const getAllTags = () => {
     const tags = new Set();
-    items.forEach(item => {
-      item.tags?.forEach(tag => tags.add(tag));
-    });
+    items.forEach((item) => item.tags?.forEach((tag) => tags.add(tag)));
     return ['All', ...Array.from(tags)];
   };
+
+  const isEmptyVault = items.length === 0;
+  const isFilteredEmpty = !isEmptyVault && filteredItems.length === 0;
 
   return (
     <div className="p-4 md:p-6 mt-12 md:mt-0">
@@ -117,54 +133,45 @@ const CredentialsSection = ({ type, title }) => {
         className="flex items-center justify-between mb-6"
       >
         <div>
-          <p className="text-xs tracking-[0.2em] uppercase text-cyan-300/70 mb-2">Vault</p>
+          <p className="text-xs tracking-[0.2em] uppercase text-cyan-300/70 mb-2">{t('nav.vault')}</p>
           <h1 className="font-display text-2xl md:text-4xl text-white mb-2">{title}</h1>
           <p className="text-white/45">{filteredItems.length} {t('common.items')}</p>
         </div>
-        
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => setIsModalOpen(true)}
-          className="btn-primary"
-        >
-          <Plus size={20} />
-          {t('common.add')}
-        </motion.button>
+        {!isEmptyVault && (
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => { setEditData(null); setIsModalOpen(true); }}
+            className="btn-primary"
+          >
+            <Plus size={20} />
+            {t('common.add')}
+          </motion.button>
+        )}
       </motion.div>
 
-      <SmartSearch 
-        onSearch={setSearchTerm}
-        onFilter={(filters) => {
-          // Handle advanced filters here
-          if (filters.category) {
-            // Filter by category logic
-          }
-        }}
-      />
+      {!isEmptyVault && (
+        <SmartSearch
+          onSearch={setSearchTerm}
+          onFilter={setAdvanced}
+          tags={getAllTags()}
+          selectedTag={selectedTag}
+          onTagChange={setSelectedTag}
+        />
+      )}
 
       {filteredItems.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-12"
-        >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
           <div className="w-24 h-24 gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 opacity-20 glow-primary">
             <Plus size={32} />
           </div>
-          <h3 className="font-display text-2xl text-white mb-2">No {title.toLowerCase()} yet</h3>
-          <p className="text-white/45 mb-6">
-            {searchTerm || selectedTag !== 'All' 
-              ? 'Try adjusting your search or filters' 
-              : `Add your first ${title.toLowerCase()} — it stays encrypted in this vault`
-            }
-          </p>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="btn-primary"
-          >
-            Add {type === 'credentials' ? 'Credential' : type === 'emails' ? 'Email' : type === 'banking' ? 'Bank Account' : type === 'cards' ? 'Card' : type === 'government' ? 'Government ID' : type === 'insurance' ? 'Insurance Policy' : type === 'investments' ? 'Investment' : type === 'notes' ? 'Note' : 'Item'}
-          </button>
+          <h3 className="font-display text-2xl text-white mb-2">{t('empty.none')}</h3>
+          <p className="text-white/45 mb-6">{isFilteredEmpty ? t('empty.filtered') : t('empty.addFirst')}</p>
+          {isEmptyVault && (
+            <button onClick={() => { setEditData(null); setIsModalOpen(true); }} className="btn-primary">
+              {t('empty.addItem')}
+            </button>
+          )}
         </motion.div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -173,13 +180,9 @@ const CredentialsSection = ({ type, title }) => {
               key={item.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
+              transition={{ delay: Math.min(index, 6) * 0.03 }}
             >
-              <CredentialCard
-                credential={item}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
+              <CredentialCard credential={item} onEdit={handleEdit} onDelete={handleDelete} />
             </motion.div>
           ))}
         </div>

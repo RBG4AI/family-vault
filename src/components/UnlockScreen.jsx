@@ -43,7 +43,12 @@ const UnlockScreen = ({ vault, onUnlock, onBack, onRecovery, busy, error }) => {
             autoFocus
             className="field pr-12"
           />
-          <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40">
+          <button
+            type="button"
+            aria-label={show ? t('common.hidePassword') : t('common.showPassword')}
+            onClick={() => setShow(!show)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40"
+          >
             {show ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
