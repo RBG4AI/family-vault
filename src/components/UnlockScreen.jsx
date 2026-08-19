@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Eye, EyeOff, Lock } from 'lucide-react';
 import { useI18n } from '../context/I18nContext';
 import LanguageSwitch from './LanguageSwitch';
+import SecretInput from './SecretInput';
 
 const UnlockScreen = ({ vault, onUnlock, onBack, onRecovery, busy, error }) => {
   const { t } = useI18n();
@@ -19,6 +20,7 @@ const UnlockScreen = ({ vault, onUnlock, onBack, onRecovery, busy, error }) => {
           onUnlock(password);
         }}
         className="glass-panel rounded-3xl p-8 w-full max-w-md space-y-6"
+        autoComplete="off"
       >
         <button type="button" onClick={onBack} className="text-white/45 hover:text-white flex items-center gap-2 text-sm">
           <ArrowLeft size={16} /> {t('unlock.back')}
@@ -34,13 +36,13 @@ const UnlockScreen = ({ vault, onUnlock, onBack, onRecovery, busy, error }) => {
         </div>
 
         <div className="relative">
-          <input
+          <SecretInput
             type={show ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder={t('unlock.password')}
-            autoComplete="current-password"
             autoFocus
+            name="fv-master"
             className="field pr-12"
           />
           <button

@@ -86,6 +86,7 @@ export const TRANSLATIONS = {
       wrongMaster: 'Wrong master password.',
       vaultLocked: 'Vault is locked.',
       failed: 'Could not unlock this vault.',
+      invalidKdf: 'This backup uses unsupported encryption settings.',
     },
     people: {
       encrypted: 'encrypted with the vault',
@@ -478,6 +479,7 @@ export const TRANSLATIONS = {
       wrongMaster: 'गलत मास्टर पासवर्ड।',
       vaultLocked: 'वॉल्ट लॉक है।',
       failed: 'यह वॉल्ट अनलॉक नहीं हो सका।',
+      invalidKdf: 'इस बैकअप की एन्क्रिप्शन सेटिंग्स समर्थित नहीं हैं।',
     },
     people: {
       encrypted: 'वॉल्ट के साथ एन्क्रिप्टेड',

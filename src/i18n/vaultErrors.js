@@ -17,6 +17,8 @@ export const vaultErrorText = (err, t) => {
       return t('recovery.failed');
     case 'invalid_backup':
       return t('list.invalidBackup');
+    case 'invalid_kdf':
+      return t('unlock.invalidKdf');
     case 'name_mismatch':
       return t('settings.nameMismatch');
     case 'locked_vault':

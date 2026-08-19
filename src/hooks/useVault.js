@@ -123,8 +123,13 @@ export const useVault = () => {
     setBusy(true);
     setError('');
     try {
-      await unlockWithRecovery(selectedId, key, nextPassword);
-      setPhase('unlocked');
+      const nextKey = await unlockWithRecovery(selectedId, key, nextPassword);
+      if (nextKey) {
+        setRecoveryKey(nextKey);
+        setPhase('recovery-shown');
+      } else {
+        setPhase('unlocked');
+      }
     } catch (err) {
       setError(vaultErrorText({ ...err, code: err.code || 'recovery_failed' }, t));
     } finally {
@@ -134,6 +139,7 @@ export const useVault = () => {
 
   const lock = async () => {
     await lockVault();
+    setRecoveryKey('');
     setPhase(selectedId ? 'unlock' : 'list');
     await refreshVaults();
   };
@@ -149,7 +155,6 @@ export const useVault = () => {
       recoveryKey,
       unlocked: session.unlocked,
       meta: session.meta,
-      data: session.data,
       persistError: session.persistError,
       selectVault,
       startCreate,
@@ -161,7 +166,14 @@ export const useVault = () => {
       handleRecoveryReset,
       lock,
       refreshVaults,
-      updateMasterPassword,
+      updateMasterPassword: async (currentPassword, nextPassword) => {
+        const recovery = await updateMasterPassword(currentPassword, nextPassword);
+        if (recovery) {
+          setRecoveryKey(recovery);
+          setPhase('recovery-shown');
+        }
+        return recovery;
+      },
       rotateRecoveryKey,
       exportEncryptedBackup,
       importEncryptedBackup: async (backup) => {

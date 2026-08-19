@@ -26,6 +26,12 @@
     color: #0f172a;
     background: #e8eef8;
   }
+  html.vault-obscured #root {
+    visibility: hidden;
+  }
+  html.vault-obscured body {
+    filter: blur(28px);
+  }
   input[type='date'],
   input[type='month'] {
     color-scheme: dark;

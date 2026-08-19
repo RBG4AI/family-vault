@@ -5,6 +5,7 @@ import PasswordStrengthMeter from './PasswordStrengthMeter';
 import { passwordScore } from '../crypto/vaultCrypto';
 import { useI18n } from '../context/I18nContext';
 import LanguageSwitch from './LanguageSwitch';
+import SecretInput from './SecretInput';
 
 const CreateVault = ({ onCreate, onBack, busy, error }) => {
   const { t } = useI18n();
@@ -41,6 +42,7 @@ const CreateVault = ({ onCreate, onBack, busy, error }) => {
         animate={{ opacity: 1, y: 0 }}
         onSubmit={handleSubmit}
         className="glass-panel rounded-3xl p-8 w-full max-w-md space-y-5"
+        autoComplete="off"
       >
         {onBack && (
           <button type="button" onClick={onBack} className="text-white/45 hover:text-white flex items-center gap-2 text-sm">
@@ -84,12 +86,12 @@ const CreateVault = ({ onCreate, onBack, busy, error }) => {
         <label className="block">
           <span className="text-sm text-white/70">{t('create.password')}</span>
           <div className="relative mt-2">
-            <input
+            <SecretInput
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="field pr-12"
-              autoComplete="new-password"
+              name="fv-create-master"
             />
             <button
               type="button"
@@ -106,12 +108,12 @@ const CreateVault = ({ onCreate, onBack, busy, error }) => {
         <label className="block">
           <span className="text-sm text-white/70">{t('create.confirm')}</span>
           <div className="relative mt-2">
-            <input
+            <SecretInput
               type={showConfirm ? 'text' : 'password'}
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               className="field pr-12"
-              autoComplete="new-password"
+              name="fv-create-confirm"
             />
             <button
               type="button"

@@ -4,6 +4,15 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const isAllowedExternal = (url) => {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
 const createWindow = () => {
   const window = new BrowserWindow({
     width: 1280,
@@ -22,8 +31,14 @@ const createWindow = () => {
   });
 
   window.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url);
+    if (isAllowedExternal(url)) shell.openExternal(url);
     return { action: 'deny' };
+  });
+
+  window.webContents.on('will-navigate', (event, url) => {
+    if (url.startsWith('file:')) return;
+    event.preventDefault();
+    if (isAllowedExternal(url)) shell.openExternal(url);
   });
 
   window.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));

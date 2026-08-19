@@ -9,16 +9,28 @@ const charset = {
   symbols: '!@#$%^&*()-_=+[]{}',
 };
 
+const unbiasedIndex = (modulo) => {
+  if (modulo <= 0) return 0;
+  const bytes = modulo > 256 ? 2 : 1;
+  const range = bytes === 1 ? 256 : 65536;
+  const limit = range - (range % modulo);
+  const buf = new Uint8Array(bytes);
+  while (true) {
+    crypto.getRandomValues(buf);
+    const value = bytes === 1 ? buf[0] : (buf[0] << 8) | buf[1];
+    if (value < limit) return value % modulo;
+  }
+};
+
 const generate = (length, options) => {
   const pools = Object.entries(options)
     .filter(([, enabled]) => enabled)
     .map(([key]) => charset[key]);
   if (!pools.length) return '';
   const all = pools.join('');
-  const bytes = crypto.getRandomValues(new Uint8Array(length));
-  return Array.from(bytes, (byte, index) => {
-    const pool = pools[index % pools.length];
-    return index < pools.length ? pool[byte % pool.length] : all[byte % all.length];
+  return Array.from({ length }, (_, index) => {
+    const pool = index < pools.length ? pools[index % pools.length] : all;
+    return pool[unbiasedIndex(pool.length)];
   }).join('');
 };
 

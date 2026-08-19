@@ -1,7 +1,10 @@
 const COPY_CLEAR_MS = 30_000;
 
+let wipeToken = 0;
+
 export const copyText = async (text) => {
   if (!text) return false;
+  wipeToken += 1;
   try {
     await navigator.clipboard.writeText(text);
     return true;
@@ -14,14 +17,13 @@ export const copySecret = async (text) => {
   const ok = await copyText(text);
   if (!ok) return false;
 
+  const token = wipeToken;
   window.setTimeout(async () => {
+    if (token !== wipeToken) return;
     try {
-      if (navigator.clipboard.readText) {
-        const current = await navigator.clipboard.readText();
-        if (current === text) await navigator.clipboard.writeText('\u00a0');
-      }
+      await navigator.clipboard.writeText('');
     } catch {
-      /* Browser blocked clipboard read. */
+      /* Clipboard write blocked. */
     }
   }, COPY_CLEAR_MS);
 

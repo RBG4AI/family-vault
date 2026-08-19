@@ -9,12 +9,17 @@ export const useAutoLogout = (onLogout, timeoutMinutes = 2, enabled = true) => {
   onLogoutRef.current = onLogout;
 
   useEffect(() => {
+    document.documentElement.classList.remove('vault-obscured');
     if (!enabled) {
       setSecondsLeft(null);
       return undefined;
     }
 
     const timeoutMs = Math.max(1, timeoutMinutes) * 60 * 1000;
+
+    const setObscured = (hidden) => {
+      document.documentElement.classList.toggle('vault-obscured', hidden);
+    };
 
     const clearTimers = () => {
       if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
@@ -66,16 +71,25 @@ export const useAutoLogout = (onLogout, timeoutMinutes = 2, enabled = true) => {
     window.addEventListener('wheel', arm, { capture: true, passive: true });
 
     const onHidden = () => {
+      setObscured(document.hidden);
       scheduleFromElapsed();
     };
     document.addEventListener('visibilitychange', onHidden);
 
+    const onPageShow = (event) => {
+      if (event.persisted) onLogoutRef.current();
+    };
+    window.addEventListener('pageshow', onPageShow);
+
+    setObscured(document.hidden);
     arm();
 
     return () => {
       events.forEach((event) => document.removeEventListener(event, arm, true));
       window.removeEventListener('wheel', arm, true);
       document.removeEventListener('visibilitychange', onHidden);
+      window.removeEventListener('pageshow', onPageShow);
+      document.documentElement.classList.remove('vault-obscured');
       clearTimers();
     };
   }, [enabled, timeoutMinutes]);

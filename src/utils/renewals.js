@@ -1,14 +1,21 @@
-const daysFrom = (iso) => {
+const parseLocalDate = (iso) => {
   if (!iso) return null;
   const value = String(iso);
-  let date;
-  if (/^\d{4}-\d{2}$/.test(value)) {
-    const [year, month] = value.split('-').map(Number);
-    date = new Date(year, month, 0);
-  } else {
-    date = new Date(value.length === 7 ? `${value}-01` : value);
+  const monthOnly = /^(\d{4})-(\d{2})$/.exec(value);
+  if (monthOnly) {
+    return new Date(Number(monthOnly[1]), Number(monthOnly[2]), 0);
   }
-  if (Number.isNaN(date.getTime())) return null;
+  const day = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+  if (day) {
+    return new Date(Number(day[1]), Number(day[2]) - 1, Number(day[3]));
+  }
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const daysFrom = (iso) => {
+  const date = parseLocalDate(iso);
+  if (!date) return null;
   const start = new Date();
   start.setHours(0, 0, 0, 0);
   date.setHours(0, 0, 0, 0);
@@ -16,13 +23,15 @@ const daysFrom = (iso) => {
 };
 
 const nextBirthday = (iso) => {
-  if (!iso) return null;
-  const birth = new Date(iso);
-  if (Number.isNaN(birth.getTime())) return null;
+  const birth = parseLocalDate(iso);
+  if (!birth) return null;
   const now = new Date();
   const next = new Date(now.getFullYear(), birth.getMonth(), birth.getDate());
   if (next < now) next.setFullYear(now.getFullYear() + 1);
-  return next.toISOString().slice(0, 10);
+  const year = next.getFullYear();
+  const month = String(next.getMonth() + 1).padStart(2, '0');
+  const day = String(next.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 const push = (list, item, field, label, category) => {

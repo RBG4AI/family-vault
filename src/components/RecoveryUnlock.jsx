@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import PasswordStrengthMeter from './PasswordStrengthMeter';
 import { passwordScore } from '../crypto/vaultCrypto';
 import { useI18n } from '../context/I18nContext';
+import SecretInput from './SecretInput';
 
 const RecoveryUnlock = ({ vault, onReset, onBack, busy, error }) => {
   const { t } = useI18n();
@@ -33,6 +34,7 @@ const RecoveryUnlock = ({ vault, onReset, onBack, busy, error }) => {
         animate={{ opacity: 1, y: 0 }}
         onSubmit={handleSubmit}
         className="glass-panel rounded-3xl p-8 w-full max-w-md space-y-5"
+        autoComplete="off"
       >
         <button type="button" onClick={onBack} className="text-white/45 hover:text-white flex items-center gap-2 text-sm">
           <ArrowLeft size={16} /> {t('recovery.back')}
@@ -45,23 +47,26 @@ const RecoveryUnlock = ({ vault, onReset, onBack, busy, error }) => {
           value={key}
           onChange={(e) => setKey(e.target.value)}
           placeholder="XXXX-XXXX-XXXX-..."
+          autoComplete="off"
+          data-lpignore="true"
+          data-1p-ignore="true"
           className="field h-28 font-mono text-sm"
         />
-        <input
+        <SecretInput
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder={t('recovery.newPassword')}
-          autoComplete="new-password"
+          name="fv-recovery-master"
           className="field"
         />
         <PasswordStrengthMeter password={password} />
-        <input
+        <SecretInput
           type="password"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
           placeholder={t('recovery.confirm')}
-          autoComplete="new-password"
+          name="fv-recovery-confirm"
           className="field"
         />
         {(localError || error) && <p className="text-rose-300 text-sm">{localError || error}</p>}

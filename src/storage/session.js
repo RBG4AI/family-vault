@@ -1,5 +1,6 @@
 import {
   EMPTY_VAULT_DATA,
+  assertEnvelopeShape,
   changePassword,
   createEnvelope,
   hydrateVaultData,
@@ -9,11 +10,21 @@ import {
   unlockEnvelope,
 } from '../crypto/vaultCrypto';
 import { deleteVaultRecord, getVaultRecord, listVaultRecords, saveVaultRecord } from './db.js';
-import { extractLegacyData, findLegacyVaults, verifyLegacyPassword, wipeAllLegacySecrets, wipeLegacyVault } from './legacy';
+import {
+  clearLegacyLock,
+  extractLegacyData,
+  findLegacyVaults,
+  readLegacyLock,
+  verifyLegacyPassword,
+  wipeAllLegacySecrets,
+  wipeLegacyVault,
+  writeLegacyLock,
+} from './legacy';
 import { taggedError } from '../i18n/vaultErrors';
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS = 30_000;
+const MAX_BACKUP_BYTES = 5 * 1024 * 1024;
 
 let dek = null;
 let envelope = null;
@@ -21,6 +32,7 @@ let data = structuredClone(EMPTY_VAULT_DATA);
 let activeMeta = null;
 let persistChain = Promise.resolve();
 let persistError = null;
+let sessionEpoch = 0;
 
 const listeners = new Set();
 
@@ -39,23 +51,22 @@ const assertUnlocked = () => {
   }
 };
 
-const queuePersist = (task) => {
-  persistChain = persistChain
-    .catch(() => {})
-    .then(task)
-    .catch((error) => {
+const enqueue = (task, { persistFail = false } = {}) => {
+  const run = persistChain.catch(() => {}).then(task);
+  persistChain = run.catch((error) => {
+    if (persistFail) {
       persistError = error.code || 'save_failed';
       notify();
-    });
-  return persistChain;
+    }
+  });
+  return run;
 };
 
 export const getSessionSnapshot = () => ({
-  dek,
-  data,
   meta: activeMeta,
   unlocked: Boolean(dek),
   persistError,
+  revision: activeMeta?.updatedAt || sessionEpoch,
 });
 
 export const listAllVaults = async () => {
@@ -64,10 +75,13 @@ export const listAllVaults = async () => {
   return [...records, ...legacy];
 };
 
-const persistCurrent = () =>
-  queuePersist(async () => {
-    assertUnlocked();
-    envelope = await persistEnvelope(envelope, dek, data);
+const persistCurrent = () => {
+  const epoch = sessionEpoch;
+  return enqueue(async () => {
+    if (epoch !== sessionEpoch || !dek || !envelope || !activeMeta) return;
+    const nextEnvelope = await persistEnvelope(envelope, dek, data);
+    if (epoch !== sessionEpoch || !dek || !activeMeta) return;
+    envelope = nextEnvelope;
     activeMeta = { ...activeMeta, updatedAt: new Date().toISOString(), failedAttempts: 0, lockedUntil: null };
     await saveVaultRecord({
       ...activeMeta,
@@ -75,7 +89,8 @@ const persistCurrent = () =>
     });
     persistError = null;
     notify();
-  });
+  }, { persistFail: true });
+};
 
 export const createVault = async ({ name, kind, password }) => {
   const created = await createEnvelope(password, EMPTY_VAULT_DATA);
@@ -89,10 +104,12 @@ export const createVault = async ({ name, kind, password }) => {
     lockedUntil: null,
   };
   await saveVaultRecord({ ...meta, envelope: created.envelope });
+  sessionEpoch += 1;
   dek = created.dek;
   envelope = created.envelope;
   data = hydrateVaultData(created.data);
   activeMeta = meta;
+  persistError = null;
   notify();
   return { meta, recoveryKey: created.recoveryKey };
 };
@@ -108,12 +125,13 @@ const registerFailure = async (record) => {
   const failedAttempts = (record.failedAttempts || 0) + 1;
   const lockedUntil = failedAttempts >= MAX_ATTEMPTS ? Date.now() + LOCKOUT_MS : null;
   const next = {
-    ...record,
     failedAttempts: lockedUntil ? 0 : failedAttempts,
     lockedUntil,
   };
-  if (!record.isLegacy) {
-    await saveVaultRecord(next);
+  if (record.isLegacy) {
+    writeLegacyLock(record.id, next);
+  } else {
+    await saveVaultRecord({ ...record, ...next });
   }
   const remaining = MAX_ATTEMPTS - failedAttempts;
   if (lockedUntil) {
@@ -125,8 +143,9 @@ const registerFailure = async (record) => {
 export const unlockVault = async (id, password) => {
   const legacyMatch = findLegacyVaults().find((item) => item.id === id);
   if (legacyMatch) {
+    checkLockout({ ...readLegacyLock(legacyMatch.id), isLegacy: true });
     if (!verifyLegacyPassword(legacyMatch, password)) {
-      throw taggedError('wrong_master', 'Wrong master password.');
+      await registerFailure({ id: legacyMatch.id, isLegacy: true, ...readLegacyLock(legacyMatch.id) });
     }
     const migratedData = extractLegacyData(legacyMatch);
     const created = await createEnvelope(password, migratedData);
@@ -141,10 +160,13 @@ export const unlockVault = async (id, password) => {
     };
     await saveVaultRecord({ ...meta, envelope: created.envelope });
     wipeLegacyVault(legacyMatch);
+    clearLegacyLock(legacyMatch.id);
+    sessionEpoch += 1;
     dek = created.dek;
     envelope = created.envelope;
     data = hydrateVaultData(created.data);
     activeMeta = meta;
+    persistError = null;
     notify();
     return { migrated: true, recoveryKey: created.recoveryKey, id: meta.id };
   }
@@ -154,7 +176,9 @@ export const unlockVault = async (id, password) => {
   checkLockout(record);
 
   try {
+    assertEnvelopeShape(record.envelope);
     const unlocked = await unlockEnvelope(record.envelope, password);
+    sessionEpoch += 1;
     dek = unlocked.dek;
     envelope = record.envelope;
     data = hydrateVaultData(unlocked.data);
@@ -168,9 +192,11 @@ export const unlockVault = async (id, password) => {
       lockedUntil: null,
     };
     await saveVaultRecord({ ...record, failedAttempts: 0, lockedUntil: null });
+    persistError = null;
     notify();
     return { migrated: false };
   } catch (error) {
+    if (error.code === 'invalid_kdf' || error.code === 'invalid_backup') throw error;
     await registerFailure(record);
     throw error;
   }
@@ -180,6 +206,7 @@ export const unlockWithRecovery = async (id, recoveryKey, nextPassword) => {
   const record = await getVaultRecord(id);
   if (!record) throw taggedError('not_found', 'Vault not found.');
   const reset = await resetPasswordWithRecovery(record.envelope, recoveryKey, nextPassword);
+  sessionEpoch += 1;
   dek = reset.dek;
   envelope = reset.envelope;
   data = hydrateVaultData(reset.data);
@@ -193,7 +220,9 @@ export const unlockWithRecovery = async (id, recoveryKey, nextPassword) => {
     lockedUntil: null,
   };
   await saveVaultRecord({ ...record, ...activeMeta, envelope });
+  persistError = null;
   notify();
+  return reset.recoveryKey;
 };
 
 export const lockVault = async ({ persist = true } = {}) => {
@@ -202,6 +231,7 @@ export const lockVault = async ({ persist = true } = {}) => {
   } catch {
     /* Still wipe keys from memory. */
   }
+  sessionEpoch += 1;
   dek = null;
   envelope = null;
   data = structuredClone(EMPTY_VAULT_DATA);
@@ -221,21 +251,40 @@ export const updateVaultData = (updater) => {
 
 export const updateMasterPassword = async (currentPassword, nextPassword) => {
   assertUnlocked();
-  envelope = await changePassword(envelope, currentPassword, nextPassword);
-  await saveVaultRecord({ ...activeMeta, envelope, updatedAt: new Date().toISOString() });
+  return enqueue(async () => {
+    assertUnlocked();
+    const rotated = await changePassword(envelope, currentPassword, nextPassword, data);
+    envelope = rotated.envelope;
+    dek = rotated.dek;
+    data = hydrateVaultData(rotated.data);
+    activeMeta = { ...activeMeta, updatedAt: new Date().toISOString() };
+    await saveVaultRecord({ ...activeMeta, envelope });
+    persistError = null;
+    notify();
+    return rotated.recoveryKey;
+  });
 };
 
 export const rotateRecoveryKey = async (password) => {
   assertUnlocked();
-  const rotated = await regenerateRecovery(envelope, password);
-  envelope = rotated.envelope;
-  await saveVaultRecord({ ...activeMeta, envelope, updatedAt: new Date().toISOString() });
-  return rotated.recoveryKey;
+  return enqueue(async () => {
+    assertUnlocked();
+    const rotated = await regenerateRecovery(envelope, password);
+    envelope = rotated.envelope;
+    dek = rotated.dek;
+    data = hydrateVaultData(rotated.data);
+    activeMeta = { ...activeMeta, updatedAt: new Date().toISOString() };
+    await saveVaultRecord({ ...activeMeta, envelope });
+    persistError = null;
+    notify();
+    return rotated.recoveryKey;
+  });
 };
 
 export const exportEncryptedBackup = async () => {
   assertUnlocked();
   await persistCurrent();
+  if (persistError) throw taggedError('save_failed', 'Could not save.');
   const record = await getVaultRecord(activeMeta.id);
   return {
     app: 'family-vault',
@@ -254,6 +303,15 @@ export const exportEncryptedBackup = async () => {
 
 export const importEncryptedBackup = async (backup) => {
   if (backup?.app !== 'family-vault' || !backup?.vault?.envelope) {
+    throw taggedError('invalid_backup', 'Not a valid Vault backup file.');
+  }
+  try {
+    assertEnvelopeShape(backup.vault.envelope);
+  } catch (error) {
+    throw taggedError(error.code || 'invalid_backup', error.message || 'Not a valid Vault backup file.');
+  }
+  const encoded = JSON.stringify(backup);
+  if (encoded.length > MAX_BACKUP_BYTES) {
     throw taggedError('invalid_backup', 'Not a valid Vault backup file.');
   }
   const source = backup.vault;
@@ -288,11 +346,15 @@ export const destroyActiveVault = async (confirmName) => {
     throw taggedError('name_mismatch', 'Vault name does not match.');
   }
   const id = activeMeta.id;
+  sessionEpoch += 1;
+  await persistChain.catch(() => {});
   await deleteVaultRecord(id);
   await lockVault({ persist: false });
 };
 
 export const wipeDevice = async () => {
+  sessionEpoch += 1;
+  await persistChain.catch(() => {});
   const records = await listVaultRecords();
   await Promise.all(records.map((record) => deleteVaultRecord(record.id)));
   wipeAllLegacySecrets();

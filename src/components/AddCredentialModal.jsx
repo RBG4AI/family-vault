@@ -6,6 +6,7 @@ import PasswordGenerator from './PasswordGenerator';
 import { storage } from '../utils/storage';
 import { validateField } from '../utils/validation';
 import { useI18n } from '../context/I18nContext';
+import SecretInput from './SecretInput';
 
 const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPersonId }) => {
   const { t } = useI18n();
@@ -297,15 +298,27 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
                     </label>
                   ) : (
                     <div>
-                      <input
-                        type={field.type}
-                        value={formData[field.key] || ''}
-                        onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                        required={field.required}
-                        autoComplete="off"
-                        className="field"
-                        placeholder={label}
-                      />
+                      {field.type === 'password' ? (
+                        <SecretInput
+                          type="password"
+                          value={formData[field.key] || ''}
+                          onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
+                          required={field.required}
+                          name={`fv-item-${field.key}`}
+                          className="field"
+                          placeholder={label}
+                        />
+                      ) : (
+                        <input
+                          type={field.type}
+                          value={formData[field.key] || ''}
+                          onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
+                          required={field.required}
+                          autoComplete="off"
+                          className="field"
+                          placeholder={label}
+                        />
+                      )}
                       {field.type === 'password' && <PasswordStrengthMeter password={formData[field.key] || ''} />}
                       {(field.key === 'password' || field.key === 'netBankingPassword') && (
                         <div className="mt-3">

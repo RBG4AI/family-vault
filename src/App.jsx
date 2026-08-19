@@ -31,7 +31,7 @@ function App() {
   const secondsLeft = useAutoLogout(
     vault.lock,
     autoLockMinutes,
-    vault.unlocked && vault.phase === 'unlocked'
+    vault.unlocked
   );
 
   useEffect(() => {

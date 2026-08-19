@@ -1,4 +1,5 @@
 const LEGACY_PROFILE_KEY = 'vault_profiles';
+const LEGACY_LOCK_PREFIX = 'vault_legacy_lock_';
 const SENSITIVE_KEYS = [
   'vault_data',
   'masterPassword',
@@ -63,6 +64,20 @@ export const findLegacyVaults = () => {
   return vaults;
 };
 
+export const readLegacyLock = (id) =>
+  parseJson(localStorage.getItem(LEGACY_LOCK_PREFIX + id), { failedAttempts: 0, lockedUntil: null }) || {
+    failedAttempts: 0,
+    lockedUntil: null,
+  };
+
+export const writeLegacyLock = (id, state) => {
+  localStorage.setItem(LEGACY_LOCK_PREFIX + id, JSON.stringify(state));
+};
+
+export const clearLegacyLock = (id) => {
+  localStorage.removeItem(LEGACY_LOCK_PREFIX + id);
+};
+
 export const verifyLegacyPassword = (legacyVault, password) => {
   const stored = legacyVault.packed?.masterPassword;
   if (!stored || !password) return false;
@@ -88,6 +103,7 @@ export const extractLegacyData = (legacyVault) => {
 };
 
 export const wipeLegacyVault = (legacyVault) => {
+  clearLegacyLock(legacyVault.id);
   if (legacyVault.legacyId && legacyVault.legacyId !== 'default') {
     localStorage.removeItem(`vault_data_${legacyVault.legacyId}`);
     const profiles = parseJson(localStorage.getItem(LEGACY_PROFILE_KEY), []);
@@ -97,6 +113,9 @@ export const wipeLegacyVault = (legacyVault) => {
     );
   }
   localStorage.removeItem('vault_data');
+  if (findLegacyVaults().length === 0) {
+    SENSITIVE_KEYS.forEach((key) => localStorage.removeItem(key));
+  }
 };
 
 export const wipeAllLegacySecrets = () => {
@@ -105,6 +124,7 @@ export const wipeAllLegacySecrets = () => {
     if (
       key.startsWith('vault_data') ||
       key.startsWith('sync_') ||
+      key.startsWith('vault_legacy_lock_') ||
       key === 'vault_profiles' ||
       key === 'vault_session' ||
       key === 'vault_profile'

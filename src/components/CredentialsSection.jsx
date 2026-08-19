@@ -28,7 +28,23 @@ const itemAmount = (item) => {
 
 const itemDate = (item) => item.updatedAt || item.createdAt || item.purchaseDate || item.maturityDate || null;
 
-const AMOUNT_TYPES = new Set(['investments', 'insurance', 'cards']);
+const SECRET_SEARCH_KEYS = new Set([
+  'password',
+  'cvv',
+  'pin',
+  'netBankingPassword',
+  'transactionPin',
+  'mobilePin',
+  'content',
+]);
+
+const searchableText = (item) =>
+  Object.entries(item)
+    .filter(([key]) => !SECRET_SEARCH_KEYS.has(key) && key !== 'id')
+    .map(([, value]) => value)
+    .filter((value) => value !== undefined && value !== null)
+    .join(' ')
+    .toLowerCase();
 
 const inDateRange = (iso, range) => {
   if (!range) return true;
@@ -48,6 +64,8 @@ const inAmountRange = (amount, range) => {
   if (range === '10000+') return amount >= 10000;
   return true;
 };
+
+const AMOUNT_TYPES = new Set(['investments', 'insurance', 'cards']);
 
 const CredentialsSection = ({ type, title }) => {
   const { t } = useI18n();
@@ -81,9 +99,7 @@ const CredentialsSection = ({ type, title }) => {
     let filtered = items;
     if (searchTerm) {
       const q = searchTerm.toLowerCase();
-      filtered = filtered.filter((item) =>
-        Object.values(item).some((value) => value?.toString().toLowerCase().includes(q))
-      );
+      filtered = filtered.filter((item) => searchableText(item).includes(q));
     }
     if (selectedTag !== 'All') {
       filtered = filtered.filter((item) => item.tags?.includes(selectedTag));

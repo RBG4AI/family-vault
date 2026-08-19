@@ -11,6 +11,7 @@ import { storage } from '../utils/storage';
 import LanguageSwitch from './LanguageSwitch';
 import { useI18n } from '../context/I18nContext';
 import { vaultErrorText } from '../i18n/vaultErrors';
+import SecretInput from './SecretInput';
 
 const Settings = () => {
   const vault = useVaultContext();
@@ -159,10 +160,10 @@ const Settings = () => {
             <h2 className="text-white font-semibold">{t('settings.changePassword')}</h2>
           </div>
           <form onSubmit={handleChangePassword} className="space-y-3">
-            <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder={t('settings.currentPassword')} autoComplete="current-password" className="field" />
-            <input type="password" value={nextPassword} onChange={(e) => setNextPassword(e.target.value)} placeholder={t('settings.newPassword')} autoComplete="new-password" className="field" />
+            <SecretInput type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder={t('settings.currentPassword')} name="fv-current-master" className="field" />
+            <SecretInput type="password" value={nextPassword} onChange={(e) => setNextPassword(e.target.value)} placeholder={t('settings.newPassword')} name="fv-new-master" className="field" />
             <PasswordStrengthMeter password={nextPassword} />
-            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder={t('settings.confirmNew')} autoComplete="new-password" className="field" />
+            <SecretInput type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder={t('settings.confirmNew')} name="fv-new-confirm" className="field" />
             {passwordMessage && <p className="text-sm text-amber-300">{passwordMessage}</p>}
             <button type="submit" className="btn-primary">{t('settings.updatePassword')}</button>
           </form>
@@ -175,7 +176,7 @@ const Settings = () => {
           </div>
           <p className="text-white/45 text-sm">{t('settings.recoveryHint')}</p>
           <form onSubmit={handleRotateRecovery} className="space-y-3">
-            <input type="password" value={recoveryPassword} onChange={(e) => setRecoveryPassword(e.target.value)} placeholder={t('create.password')} className="field" />
+            <SecretInput type="password" value={recoveryPassword} onChange={(e) => setRecoveryPassword(e.target.value)} placeholder={t('create.password')} name="fv-rotate-master" className="field" />
             {recoveryMessage && <p className="text-sm text-red-400">{recoveryMessage}</p>}
             <button type="submit" className="px-4 py-2 bg-white/10 text-white rounded-xl">{t('settings.generateRecovery')}</button>
           </form>
