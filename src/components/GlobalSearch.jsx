@@ -25,7 +25,7 @@ const GlobalSearch = ({ onNavigate, hidden }) => {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed top-4 right-[4.25rem] md:right-28 z-[60] p-3 glass-panel rounded-2xl text-white print:hidden"
+        className="fixed top-4 right-[4.25rem] md:right-28 z-[60] p-3 glass-panel rounded-2xl text-white print:hidden print-hide"
         aria-label={t('search.global')}
       >
         <Search className="w-5 h-5" />

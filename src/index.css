@@ -147,4 +147,18 @@ html.light [class*="bg-gradient-to"] {
   html.vault-obscured #root {
     visibility: visible;
   }
+  html, body, #root {
+    background: #fff !important;
+    color: #111 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .print-hide {
+    display: none !important;
+  }
+  #emergency-print {
+    display: block !important;
+    color: #111 !important;
+    background: #fff !important;
+  }
 }

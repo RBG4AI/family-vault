@@ -163,10 +163,10 @@ function App() {
 
   return (
     <AmbientBackground>
-      <div className="min-h-screen flex">
+      <div className="min-h-screen flex print:block">
         <OfflineIndicator />
         {secondsLeft !== null && (
-          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-amber-300 text-dark-900 px-4 py-2 rounded-full text-sm font-medium">
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-amber-300 text-dark-900 px-4 py-2 rounded-full text-sm font-medium print-hide">
             {t('lock.soon', { seconds: secondsLeft })}
           </div>
         )}
@@ -177,7 +177,7 @@ function App() {
           vaultName={vault.meta?.name}
         />
         <GlobalSearch onNavigate={goTo} />
-        <main className="flex-1 overflow-y-auto pb-8">
+        <main className="flex-1 overflow-y-auto pb-8 print:overflow-visible print:pb-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeSection}

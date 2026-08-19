@@ -101,7 +101,7 @@ const Sidebar = ({ activeSection, setActiveSection, onLock, vaultName }) => {
         ref={asideRef}
         className={`${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } md:translate-x-0 fixed md:relative z-50 w-[17rem] h-screen sidebar-shell p-5 flex flex-col transition-transform duration-300 ease-in-out`}
+        } md:translate-x-0 fixed md:relative z-50 w-[17rem] h-screen sidebar-shell p-5 flex flex-col transition-transform duration-300 ease-in-out print-hide`}
       >
         <div className="flex items-center justify-between mb-8 px-1">
           <div className="flex items-center gap-3 min-w-0">

@@ -310,7 +310,9 @@ export const TRANSLATIONS = {
     },
     sheet: {
       title: 'Family emergency sheet',
-      subtitle: 'Secrets are hidden. Keep this printout with your recovery key, not online.',
+      subtitle: 'For hospital, police, and roadside use when this phone is locked or dead. Keep the paper offline with your recovery key.',
+      keptInVault: 'Not printed: passwords, PINs, CVV, and secret notes. Cards show last 4 only.',
+      printed: 'Printed {date}',
       print: 'Print emergency sheet',
       calendar: 'Download renewals calendar',
       empty: 'No people yet.',
@@ -764,7 +766,9 @@ export const TRANSLATIONS = {
     },
     sheet: {
       title: 'परिवार आपातकालीन पत्रक',
-      subtitle: 'रहस्य छिपे हैं। प्रिंट रिकवरी कुंजी के साथ रखें, ऑनलाइन नहीं।',
+      subtitle: 'अस्पताल, पुलिस या सड़क पर, जब फ़ोन लॉक या बंद हो। यह कागज़ रिकवरी कुंजी के साथ ऑफ़लाइन रखें।',
+      keptInVault: 'प्रिंट नहीं: पासवर्ड, पिन, CVV और गुप्त नोट। कार्ड पर केवल अंतिम 4 अंक।',
+      printed: 'प्रिंट {date}',
       print: 'आपातकालीन पत्रक प्रिंट करें',
       calendar: 'नवीनीकरण कैलेंडर डाउनलोड करें',
       empty: 'अभी कोई सदस्य नहीं।',

@@ -1,45 +1,76 @@
 const last4 = (value) => {
-  const text = String(value || '').replace(/\s/g, '');
-  if (!text) return '';
-  if (text.length <= 4) return '••••';
-  return `••••${text.slice(-4)}`;
+  const raw = String(value || '').replace(/\s/g, '');
+  if (!raw) return '';
+  if (raw.length <= 4) return raw;
+  return `•••• ${raw.slice(-4)}`;
 };
 
-const rowsFor = (items, pick) => (items || []).map(pick).filter((row) => row.label);
+const text = (value) => {
+  const next = String(value || '').trim();
+  return next || '';
+};
+
+const rowsFor = (items, pick) => (items || []).map(pick).filter((row) => row.title);
 
 export const buildEmergencySheet = (data = {}) => {
   const people = (data.people || []).map((person) => ({
-    name: person.name,
-    relation: person.relation || '',
-    phone: person.phone || '',
-    emergencyPhone: person.emergencyPhone || '',
-    bloodGroup: person.bloodGroup || '',
-    allergies: person.allergies || '',
-    doctorName: person.doctorName || '',
-    lockerHint: person.lockerHint || '',
+    id: person.id,
+    name: text(person.name),
+    relation: text(person.relation),
+    birthday: text(person.birthday),
+    phone: text(person.phone),
+    email: text(person.email),
+    emergencyPhone: text(person.emergencyPhone),
+    bloodGroup: text(person.bloodGroup),
+    allergies: text(person.allergies),
+    doctorName: text(person.doctorName),
+    lockerHint: text(person.lockerHint),
   }));
 
   return {
     people,
     ids: rowsFor(data.government, (item) => ({
-      label: item.documentType || 'ID',
-      value: last4(item.documentNumber),
-      extra: item.holderName || '',
+      title: text(item.documentType) || 'ID',
+      holder: text(item.holderName),
+      number: text(item.documentNumber),
+      expiry: text(item.expiryDate),
+      extra: text(item.issuingAuthority),
     })),
     insurance: rowsFor(data.insurance, (item) => ({
-      label: item.insuranceType || 'Insurance',
-      value: last4(item.policyNumber),
-      extra: item.provider || '',
+      title: text(item.insuranceType) || 'Insurance',
+      holder: text(item.policyHolderName),
+      number: text(item.policyNumber),
+      extra: [text(item.provider), text(item.nominee) && `Nominee ${item.nominee}`, text(item.policyEndDate)].filter(Boolean).join(' · '),
     })),
     banking: rowsFor(data.banking, (item) => ({
-      label: item.bankName || 'Bank',
-      value: last4(item.accountNumber),
-      extra: item.ifscCode || '',
+      title: text(item.bankName) || 'Bank',
+      holder: '',
+      number: text(item.accountNumber),
+      extra: text(item.ifscCode),
+    })),
+    cards: rowsFor(data.cards, (item) => ({
+      title: text(item.cardType) || 'Card',
+      holder: text(item.cardHolderName) || text(item.bankName),
+      number: last4(item.cardNumber),
+      extra: [text(item.bankName), text(item.expiryDate)].filter(Boolean).join(' · '),
     })),
     vehicles: rowsFor(data.vehicles, (item) => ({
-      label: item.name || 'Vehicle',
-      value: item.registrationNumber || '',
-      extra: item.insurer || '',
+      title: text(item.name) || 'Vehicle',
+      holder: text(item.vehicleType),
+      number: text(item.registrationNumber),
+      extra: [text(item.insurer), text(item.policyNumber), text(item.insuranceExpiry)].filter(Boolean).join(' · '),
+    })),
+    properties: rowsFor(data.properties, (item) => ({
+      title: text(item.name) || 'Property',
+      holder: text(item.propertyType),
+      number: text(item.surveyNumber),
+      extra: text(item.address),
+    })),
+    investments: rowsFor(data.investments, (item) => ({
+      title: text(item.name) || text(item.investmentType) || 'Investment',
+      holder: text(item.platform),
+      number: text(item.accountNumber),
+      extra: [text(item.investmentType), text(item.maturityDate)].filter(Boolean).join(' · '),
     })),
   };
 };
