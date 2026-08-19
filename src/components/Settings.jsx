@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, Upload, KeyRound, Shield, Trash2, AlertTriangle } from 'lucide-react';
+import { Download, Upload, KeyRound, Shield, Trash2, AlertTriangle, Sparkles } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import PWAInstaller from './PWAInstaller';
 import RecoveryKeyScreen from './RecoveryKeyScreen';
@@ -12,6 +12,7 @@ import LanguageSwitch from './LanguageSwitch';
 import { useI18n } from '../context/I18nContext';
 import { vaultErrorText } from '../i18n/vaultErrors';
 import SecretInput from './SecretInput';
+import { loadSampleHousehold, removeSampleHousehold } from '../utils/sampleData';
 
 const Settings = () => {
   const vault = useVaultContext();
@@ -28,6 +29,8 @@ const Settings = () => {
   const [destroyError, setDestroyError] = useState('');
   const [autoLockMinutes, setAutoLockMinutes] = useState(() => storage.get('settings')?.autoLockMinutes || 2);
   const [lockSaved, setLockSaved] = useState(false);
+  const [sampleMessage, setSampleMessage] = useState('');
+  const [sampleOk, setSampleOk] = useState(false);
 
   const setAutoLock = (minutes) => {
     const value = Number(minutes);
@@ -70,6 +73,30 @@ const Settings = () => {
       setNewRecoveryKey(key);
     } catch (error) {
       setRecoveryMessage(vaultErrorText(error, t));
+    }
+  };
+
+  const handleLoadSample = () => {
+    if (!window.confirm(t('settings.sampleConfirm'))) return;
+    try {
+      loadSampleHousehold();
+      setSampleOk(true);
+      setSampleMessage(t('settings.sampleLoaded'));
+    } catch (error) {
+      setSampleOk(false);
+      setSampleMessage(vaultErrorText(error, t));
+    }
+  };
+
+  const handleRemoveSample = () => {
+    if (!window.confirm(t('settings.sampleRemoveConfirm'))) return;
+    try {
+      removeSampleHousehold();
+      setSampleOk(true);
+      setSampleMessage(t('settings.sampleRemoved'));
+    } catch (error) {
+      setSampleOk(false);
+      setSampleMessage(vaultErrorText(error, t));
     }
   };
 
@@ -131,6 +158,25 @@ const Settings = () => {
           <h1 className="font-display text-3xl md:text-4xl text-white mb-2">{t('nav.settings')}</h1>
           <p className="text-white/45">{t('settings.intro')}</p>
         </div>
+
+        <section className="glass-panel rounded-3xl p-6 space-y-4 border border-cyan-400/20">
+          <div className="flex items-center gap-2">
+            <Sparkles className="text-cyan-300" size={18} />
+            <h2 className="text-white font-semibold">{t('settings.sampleTitle')}</h2>
+          </div>
+          <p className="text-white/45 text-sm">{t('settings.sampleHint')}</p>
+          <div className="flex flex-wrap gap-3">
+            <button type="button" onClick={handleLoadSample} className="px-4 py-2 bg-cyan-500/20 text-cyan-100 rounded-xl">
+              {t('settings.sampleLoad')}
+            </button>
+            <button type="button" onClick={handleRemoveSample} className="px-4 py-2 bg-white/10 text-white rounded-xl">
+              {t('settings.sampleRemove')}
+            </button>
+          </div>
+          {sampleMessage && (
+            <p className={`text-sm ${sampleOk ? 'text-emerald-300' : 'text-red-400'}`}>{sampleMessage}</p>
+          )}
+        </section>
 
         <section className="glass-panel rounded-3xl p-6 space-y-3">
           <h2 className="text-white font-semibold">{t('settings.language')}</h2>

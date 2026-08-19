@@ -1,4 +1,4 @@
-const CACHE_NAME = 'family-vault-v7';
+const CACHE_NAME = 'family-vault-v8';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
