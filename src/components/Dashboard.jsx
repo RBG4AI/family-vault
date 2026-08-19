@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { Key, CreditCard, Users, AlertTriangle } from 'lucide-react';
 import { storage } from '../utils/storage';
-import SecurityScore from './SecurityScore';
 import { collectRenewals } from '../utils/renewals';
 import { useI18n } from '../context/I18nContext';
 
@@ -93,22 +92,19 @@ const Dashboard = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <SecurityScore />
-        <div className="glass-panel rounded-3xl p-6">
-          <h3 className="text-white font-medium mb-4">{t('nav.investments')}</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={barData.length ? barData : [{ name: '—', value: 0 }]}>
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
-              <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, color: '#fff' }} />
-              <Bar dataKey="value" fill="#67e8f9" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-          {totalInvestmentValue > 0 && (
-            <p className="text-white/40 text-sm mt-3">₹{(totalInvestmentValue / 1000).toFixed(1)}K recorded</p>
-          )}
-        </div>
+      <div className="glass-panel rounded-3xl p-6">
+        <h3 className="text-white font-medium mb-4">{t('nav.investments')}</h3>
+        <ResponsiveContainer width="100%" height={220}>
+          <BarChart data={barData.length ? barData : [{ name: '—', value: 0 }]}>
+            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
+            <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, color: '#fff' }} />
+            <Bar dataKey="value" fill="#67e8f9" radius={[8, 8, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+        {totalInvestmentValue > 0 && (
+          <p className="text-white/40 text-sm mt-3">₹{(totalInvestmentValue / 1000).toFixed(1)}K recorded</p>
+        )}
       </div>
 
       <div className="glass-panel rounded-3xl p-6">
