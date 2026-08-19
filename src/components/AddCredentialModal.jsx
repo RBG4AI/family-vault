@@ -7,7 +7,7 @@ import { storage } from '../utils/storage';
 import { validateField } from '../utils/validation';
 import { duplicateDocumentError } from '../utils/duplicateId';
 import { useI18n } from '../context/I18nContext';
-import SecretInput from './SecretInput';
+import DateSelect from './DateSelect';
 
 const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPersonId }) => {
   const { t } = useI18n();
@@ -298,6 +298,14 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
                       rows={3}
                       className="field resize-none"
                       placeholder={label}
+                    />
+                  ) : field.type === 'date' ? (
+                    <DateSelect
+                      key={`${field.key}-${editData?.id || 'new'}`}
+                      value={formData[field.key] || ''}
+                      onChange={(next) => setFormData({ ...formData, [field.key]: next })}
+                      required={field.required}
+                      range={field.key === 'birthday' ? 'birth' : 'any'}
                     />
                   ) : field.type === 'checkbox' ? (
                     <label className="flex items-center gap-3 cursor-pointer">

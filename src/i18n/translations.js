@@ -204,6 +204,11 @@ export const TRANSLATIONS = {
       deleted: 'Deleted',
       back: 'Back',
     },
+    date: {
+      day: 'Day',
+      month: 'Month',
+      year: 'Year',
+    },
     assets: {
       dueSoon: 'Due in 30 days',
       noDate: 'No date',
@@ -743,6 +748,11 @@ export const TRANSLATIONS = {
       undo: 'पूर्ववत',
       deleted: 'हटा दिया गया',
       back: 'वापस',
+    },
+    date: {
+      day: 'दिन',
+      month: 'महीना',
+      year: 'वर्ष',
     },
     assets: {
       dueSoon: '30 दिनों में देय',
