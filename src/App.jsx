@@ -13,6 +13,7 @@ import CredentialsSection from './components/CredentialsSection';
 import PeopleSection from './components/PeopleSection';
 import VitalsSection from './components/VitalsSection';
 import Settings from './components/Settings';
+import GlobalSearch from './components/GlobalSearch';
 import OfflineIndicator from './components/OfflineIndicator';
 import AmbientBackground from './components/AmbientBackground';
 import { storage } from './utils/storage';
@@ -109,35 +110,35 @@ function App() {
   const renderContent = () => {
     switch (activeSection) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard onNavigate={setActiveSection} />;
       case 'people':
         return <PeopleSection />;
       case 'vitals':
         return <VitalsSection />;
       case 'vehicles':
-        return <CredentialsSection type="vehicles" title={t('nav.vehicles')} />;
+        return <CredentialsSection type="vehicles" title={t('nav.vehicles')} onNavigate={setActiveSection} />;
       case 'properties':
-        return <CredentialsSection type="properties" title={t('nav.properties')} />;
+        return <CredentialsSection type="properties" title={t('nav.properties')} onNavigate={setActiveSection} />;
       case 'credentials':
-        return <CredentialsSection type="credentials" title={t('nav.credentials')} />;
+        return <CredentialsSection type="credentials" title={t('nav.credentials')} onNavigate={setActiveSection} />;
       case 'emails':
-        return <CredentialsSection type="emails" title={t('nav.emails')} />;
+        return <CredentialsSection type="emails" title={t('nav.emails')} onNavigate={setActiveSection} />;
       case 'banking':
-        return <CredentialsSection type="banking" title={t('nav.banking')} />;
+        return <CredentialsSection type="banking" title={t('nav.banking')} onNavigate={setActiveSection} />;
       case 'cards':
-        return <CredentialsSection type="cards" title={t('nav.cards')} />;
+        return <CredentialsSection type="cards" title={t('nav.cards')} onNavigate={setActiveSection} />;
       case 'government':
-        return <CredentialsSection type="government" title={t('nav.government')} />;
+        return <CredentialsSection type="government" title={t('nav.government')} onNavigate={setActiveSection} />;
       case 'insurance':
-        return <CredentialsSection type="insurance" title={t('nav.insurance')} />;
+        return <CredentialsSection type="insurance" title={t('nav.insurance')} onNavigate={setActiveSection} />;
       case 'investments':
-        return <CredentialsSection type="investments" title={t('nav.investments')} />;
+        return <CredentialsSection type="investments" title={t('nav.investments')} onNavigate={setActiveSection} />;
       case 'notes':
-        return <CredentialsSection type="notes" title={t('nav.notes')} />;
+        return <CredentialsSection type="notes" title={t('nav.notes')} onNavigate={setActiveSection} />;
       case 'settings':
         return <Settings />;
       default:
-        return <Dashboard />;
+        return <Dashboard onNavigate={setActiveSection} />;
     }
   };
 
@@ -156,6 +157,7 @@ function App() {
           onLock={vault.lock}
           vaultName={vault.meta?.name}
         />
+        <GlobalSearch onNavigate={setActiveSection} />
         <main className="flex-1 overflow-y-auto pb-8">
           <AnimatePresence mode="wait">
             <motion.div

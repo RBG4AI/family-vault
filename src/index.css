@@ -139,3 +139,12 @@ html.light .gradient-primary,
 html.light [class*="bg-gradient-to"] {
   color: #fff;
 }
+
+@media print {
+  html.vault-obscured body {
+    filter: none;
+  }
+  html.vault-obscured #root {
+    visibility: visible;
+  }
+}

@@ -5,6 +5,7 @@ import PasswordStrengthMeter from './PasswordStrengthMeter';
 import PasswordGenerator from './PasswordGenerator';
 import { storage } from '../utils/storage';
 import { validateField } from '../utils/validation';
+import { duplicateDocumentError } from '../utils/duplicateId';
 import { useI18n } from '../context/I18nContext';
 import SecretInput from './SecretInput';
 
@@ -118,6 +119,10 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
           { key: 'birthday', label: 'Birthday', type: 'date' },
           { key: 'phone', label: 'Phone', type: 'tel' },
           { key: 'email', label: 'Email', type: 'email' },
+          { key: 'bloodGroup', label: 'Blood group', type: 'text' },
+          { key: 'emergencyPhone', label: 'Emergency phone', type: 'tel' },
+          { key: 'doctorName', label: 'Doctor', type: 'text' },
+          { key: 'lockerHint', label: 'Locker / emergency note', type: 'textarea' },
           { key: 'notes', label: 'Notes', type: 'textarea' },
         ];
       case 'vehicle':
@@ -160,7 +165,8 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
     e.preventDefault();
     const error =
       validateField('ifscCode', formData.ifscCode) ||
-      validateField('documentNumber', formData.documentNumber, formData);
+      validateField('documentNumber', formData.documentNumber, formData) ||
+      (type === 'government' ? duplicateDocumentError(formData, editData?.id) : '');
     if (error) {
       setFieldError(error);
       return;

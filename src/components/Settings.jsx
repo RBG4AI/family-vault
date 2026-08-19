@@ -14,6 +14,8 @@ import { vaultErrorText } from '../i18n/vaultErrors';
 import SecretInput from './SecretInput';
 import { loadSampleHousehold, removeSampleHousehold } from '../utils/sampleData';
 import StorageDisclaimer from './StorageDisclaimer';
+import { downloadVaultBackup } from '../utils/exportBackup';
+import { backupAgeDays, getLastBackupAt, isTesterTools, setTesterTools } from '../utils/devicePrefs';
 
 const Settings = () => {
   const vault = useVaultContext();
@@ -32,6 +34,10 @@ const Settings = () => {
   const [lockSaved, setLockSaved] = useState(false);
   const [sampleMessage, setSampleMessage] = useState('');
   const [sampleOk, setSampleOk] = useState(false);
+  const [testerTools, setTesterToolsState] = useState(() => isTesterTools());
+  const [backupStamp, setBackupStamp] = useState(() => getLastBackupAt(vault.meta?.id));
+  const lastBackup = backupStamp;
+  const backupDays = backupStamp ? backupAgeDays(vault.meta?.id) : null;
 
   const setAutoLock = (minutes) => {
     const value = Number(minutes);
@@ -102,19 +108,12 @@ const Settings = () => {
   };
 
   const handleExport = async () => {
-    const backup = await vault.exportEncryptedBackup();
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    const safeName = String(vault.meta?.name || 'vault')
-      .replace(/[^\p{L}\p{N}._-]+/gu, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
-      .slice(0, 60) || 'vault';
-    link.download = `${safeName}-backup.vault.json`;
-    link.click();
-    URL.revokeObjectURL(url);
+    try {
+      await downloadVaultBackup(vault);
+      setBackupStamp(getLastBackupAt(vault.meta?.id));
+    } catch {
+      setImportMessage(t('common.saveFailed'));
+    }
   };
 
   const handleImport = async (event) => {
@@ -162,6 +161,23 @@ const Settings = () => {
 
         <StorageDisclaimer />
 
+        <section className="glass-panel rounded-3xl p-6 space-y-3">
+          <h2 className="text-white font-semibold">{t('settings.testerTitle')}</h2>
+          <p className="text-white/45 text-sm">{t('settings.testerHint')}</p>
+          <label className="flex items-center gap-3 text-white/80 text-sm">
+            <input
+              type="checkbox"
+              checked={testerTools}
+              onChange={(e) => {
+                setTesterTools(e.target.checked);
+                setTesterToolsState(e.target.checked);
+              }}
+            />
+            {t('settings.testerEnable')}
+          </label>
+        </section>
+
+        {testerTools && (
         <section className="glass-panel rounded-3xl p-6 space-y-4 border border-cyan-400/20">
           <div className="flex items-center gap-2">
             <Sparkles className="text-cyan-300" size={18} />
@@ -180,6 +196,7 @@ const Settings = () => {
             <p className={`text-sm ${sampleOk ? 'text-emerald-300' : 'text-red-400'}`}>{sampleMessage}</p>
           )}
         </section>
+        )}
 
         <section className="glass-panel rounded-3xl p-6 space-y-3">
           <h2 className="text-white font-semibold">{t('settings.language')}</h2>
@@ -234,6 +251,13 @@ const Settings = () => {
         <section className="glass-panel rounded-3xl p-6 space-y-4">
           <h2 className="text-white font-semibold">{t('settings.backup')}</h2>
           <p className="text-white/45 text-sm">{t('settings.backupHint')}</p>
+          <p className="text-white/60 text-sm">
+            {lastBackup
+              ? backupDays === 0
+                ? t('settings.lastBackupToday')
+                : t('settings.lastBackup', { days: backupDays })
+              : t('dash.backupNever')}
+          </p>
           <div className="flex flex-wrap gap-3">
             <button type="button" onClick={handleExport} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl">
               <Download size={16} /> {t('settings.export')}

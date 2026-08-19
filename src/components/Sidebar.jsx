@@ -77,7 +77,7 @@ const Sidebar = ({ activeSection, setActiveSection, onLock, vaultName }) => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className={`md:hidden fixed top-4 left-4 z-[60] p-3 glass-panel rounded-2xl text-white ${isOpen ? 'hidden' : ''}`}
+        className={`md:hidden fixed top-4 left-4 z-[60] p-3 glass-panel rounded-2xl text-white print:hidden ${isOpen ? 'hidden' : ''}`}
         aria-label={t('nav.openMenu')}
       >
         <Menu className="w-6 h-6" />
@@ -86,7 +86,7 @@ const Sidebar = ({ activeSection, setActiveSection, onLock, vaultName }) => {
       <button
         type="button"
         onClick={goHome}
-        className={`fixed top-4 right-4 z-[60] flex items-center gap-2 p-3 md:px-4 glass-panel rounded-2xl text-white ${
+        className={`fixed top-4 right-4 z-[60] flex items-center gap-2 p-3 md:px-4 glass-panel rounded-2xl text-white print:hidden ${
           isOpen ? 'hidden' : ''
         } ${activeSection === 'dashboard' ? 'bg-white/15' : ''}`}
         aria-label={t('nav.goHome')}

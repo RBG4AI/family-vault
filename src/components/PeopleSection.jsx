@@ -39,6 +39,13 @@ const unlinkPerson = (personId) => {
   });
 };
 
+const QUICK_ADD = [
+  { form: 'app', bucket: 'credentials', nav: 'credentials' },
+  { form: 'government', bucket: 'government', nav: 'government' },
+  { form: 'insurance', bucket: 'insurance', nav: 'insurance' },
+  { form: 'note', bucket: 'notes', nav: 'notes' },
+];
+
 const PeopleSection = () => {
   const { t } = useI18n();
   const [people, setPeople] = useState(() => storage.get('people') || []);
@@ -46,6 +53,7 @@ const PeopleSection = () => {
   const [edit, setEdit] = useState(null);
   const [selected, setSelected] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [quick, setQuick] = useState(null);
 
   const selectedPerson = people.find((person) => person.id === selected);
   const linked = useMemo(() => (selected ? linkedFor(selected) : []), [selected, people]);
@@ -56,6 +64,17 @@ const PeopleSection = () => {
       : [...people, data];
     setPeople(next);
     storage.set('people', next);
+  };
+
+  const saveLinked = (data) => {
+    if (!quick) return;
+    const items = storage.get(quick.bucket) || [];
+    const next = items.some((item) => item.id === data.id)
+      ? items.map((item) => (item.id === data.id ? data : item))
+      : [...items, data];
+    storage.set(quick.bucket, next);
+    setQuick(null);
+    setPeople((current) => [...current]);
   };
 
   return (
@@ -109,10 +128,32 @@ const PeopleSection = () => {
               <div>
                 <h2 className="text-2xl font-display text-white">{selectedPerson.name}</h2>
                 {selectedPerson.relation ? <p className="text-white/50 text-sm">{t(`option.${selectedPerson.relation}`)}</p> : null}
+                {(selectedPerson.bloodGroup || selectedPerson.emergencyPhone || selectedPerson.doctorName) && (
+                  <p className="text-white/40 text-sm mt-2">
+                    {[
+                      selectedPerson.bloodGroup && `${t('field.bloodGroup')} ${selectedPerson.bloodGroup}`,
+                      selectedPerson.emergencyPhone && `${t('field.emergencyPhone')} ${selectedPerson.emergencyPhone}`,
+                      selectedPerson.doctorName && `${t('field.doctorName')} ${selectedPerson.doctorName}`,
+                    ].filter(Boolean).join(' · ')}
+                  </p>
+                )}
+                {selectedPerson.lockerHint ? <p className="text-white/40 text-sm mt-1">{selectedPerson.lockerHint}</p> : null}
               </div>
               <button className="text-sm text-cyan-300" onClick={() => { setEdit(selectedPerson); setOpen(true); }}>{t('common.edit')}</button>
             </div>
-            <p className="text-white/40 text-sm mb-4">{t('people.linkedCount', { count: linked.length })}</p>
+            <p className="text-white/40 text-sm mb-3">{t('people.linkedCount', { count: linked.length })}</p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {QUICK_ADD.map((item) => (
+                <button
+                  key={item.bucket}
+                  type="button"
+                  className="px-3 py-1.5 text-xs rounded-lg bg-cyan-500/15 text-cyan-100"
+                  onClick={() => setQuick(item)}
+                >
+                  {t('common.add')} {t(`nav.${item.nav}`)}
+                </button>
+              ))}
+            </div>
             <div className="space-y-2">
               {linked.length === 0 && <p className="text-white/40 text-sm">{t('people.nothingLinked')}</p>}
               {linked.map((item) => (
@@ -147,6 +188,13 @@ const PeopleSection = () => {
       )}
 
       <AddCredentialModal isOpen={open} onClose={() => setOpen(false)} onSave={save} editData={edit} type="person" />
+      <AddCredentialModal
+        isOpen={Boolean(quick)}
+        onClose={() => setQuick(null)}
+        onSave={saveLinked}
+        type={quick?.form}
+        defaultPersonId={selected}
+      />
     </div>
   );
 };

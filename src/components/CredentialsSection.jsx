@@ -67,7 +67,7 @@ const inAmountRange = (amount, range) => {
 
 const AMOUNT_TYPES = new Set(['investments', 'insurance', 'cards']);
 
-const CredentialsSection = ({ type, title }) => {
+const CredentialsSection = ({ type, title, onNavigate }) => {
   const { t } = useI18n();
   const [items, setItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -142,6 +142,8 @@ const CredentialsSection = ({ type, title }) => {
 
   const isEmptyVault = items.length === 0;
   const isFilteredEmpty = !isEmptyVault && filteredItems.length === 0;
+  const people = storage.get('people') || [];
+  const needPeople = people.length === 0 && isEmptyVault && type !== 'notes';
 
   return (
     <div className="p-4 md:p-6 mt-16">
@@ -155,7 +157,7 @@ const CredentialsSection = ({ type, title }) => {
           <h1 className="font-display text-2xl md:text-4xl text-white mb-2">{title}</h1>
           <p className="text-white/45">{filteredItems.length} {t('common.items')}</p>
         </div>
-        {!isEmptyVault && (
+        {!isEmptyVault && !needPeople && (
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
@@ -179,7 +181,15 @@ const CredentialsSection = ({ type, title }) => {
         />
       )}
 
-      {filteredItems.length === 0 ? (
+      {needPeople ? (
+        <div className="glass-panel rounded-3xl p-12 text-center">
+          <h3 className="font-display text-2xl text-white mb-2">{t('dash.addFamilyTitle')}</h3>
+          <p className="text-white/45 mb-6">{t('people.empty')}</p>
+          <button type="button" onClick={() => onNavigate?.('people')} className="btn-primary">
+            {t('dash.addFamily')}
+          </button>
+        </div>
+      ) : filteredItems.length === 0 ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
           <div className="w-24 h-24 gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 opacity-20 glow-primary">
             <Plus size={32} />
