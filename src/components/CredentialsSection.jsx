@@ -3,11 +3,14 @@ import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { storage } from '../utils/storage';
 import CredentialCard from './CredentialCard';
+import VehicleCard from './VehicleCard';
+import PropertyCard from './PropertyCard';
 import AddCredentialModal from './AddCredentialModal';
 import SmartSearch from './SmartSearch';
 import { useI18n } from '../context/I18nContext';
 import { useToast } from '../context/ToastContext';
 import BackButton from './BackButton';
+import AssetSummary from './AssetSummary';
 
 const FORM_TYPE = {
   credentials: 'app',
@@ -188,7 +191,9 @@ const CredentialsSection = ({ type, title, onNavigate, focusId, onFocusHandled, 
         className="flex items-center justify-between mb-6"
       >
         <div>
-          <p className="text-xs tracking-[0.2em] uppercase text-cyan-300/70 mb-2">{t('nav.vault')}</p>
+          <p className="text-xs tracking-[0.2em] uppercase text-cyan-300/70 mb-2">
+            {type === 'vehicles' || type === 'properties' ? t('nav.family') : t('nav.vault')}
+          </p>
           <h1 className="font-display text-2xl md:text-4xl text-white mb-2">{title}</h1>
           <p className="text-white/45">{filteredItems.length} {t('common.items')}</p>
         </div>
@@ -204,6 +209,10 @@ const CredentialsSection = ({ type, title, onNavigate, focusId, onFocusHandled, 
           </motion.button>
         )}
       </motion.div>
+
+      {!isEmptyVault && (type === 'vehicles' || type === 'properties') && (
+        <AssetSummary type={type} items={items} />
+      )}
 
       {!isEmptyVault && (
         <SmartSearch
@@ -247,7 +256,13 @@ const CredentialsSection = ({ type, title, onNavigate, focusId, onFocusHandled, 
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: Math.min(index, 6) * 0.03 }}
             >
-              <CredentialCard credential={item} onEdit={handleEdit} onDelete={handleDelete} highlighted={highlightId === item.id} />
+              {type === 'vehicles' ? (
+                <VehicleCard item={item} onEdit={handleEdit} onDelete={handleDelete} highlighted={highlightId === item.id} />
+              ) : type === 'properties' ? (
+                <PropertyCard item={item} onEdit={handleEdit} onDelete={handleDelete} highlighted={highlightId === item.id} />
+              ) : (
+                <CredentialCard credential={item} onEdit={handleEdit} onDelete={handleDelete} highlighted={highlightId === item.id} />
+              )}
             </motion.div>
           ))}
         </div>

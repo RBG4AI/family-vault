@@ -196,6 +196,10 @@ export const TRANSLATIONS = {
       deleted: 'Deleted',
       back: 'Back',
     },
+    assets: {
+      dueSoon: 'Due in 30 days',
+      noDate: 'No date',
+    },
     modal: {
       add: {
         app: 'Add login',
@@ -704,6 +708,10 @@ export const TRANSLATIONS = {
       undo: 'पूर्ववत',
       deleted: 'हटा दिया गया',
       back: 'वापस',
+    },
+    assets: {
+      dueSoon: '30 दिनों में देय',
+      noDate: 'कोई तिथि नहीं',
     },
     modal: {
       add: {
