@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { Key, CreditCard, Users, AlertTriangle, Download, Printer, Calendar } from 'lucide-react';
 import { storage } from '../utils/storage';
 import { collectRenewals } from '../utils/renewals';
@@ -12,6 +11,7 @@ import { useVaultContext } from '../context/VaultContext';
 import StorageDisclaimer from './StorageDisclaimer';
 import EmergencyPrint from './EmergencyPrint';
 import AccessPrint from './AccessPrint';
+import InvestmentOverview from './InvestmentOverview';
 import { printSection } from '../utils/printSection';
 
 const Dashboard = ({ onNavigate }) => {
@@ -23,7 +23,6 @@ const Dashboard = ({ onNavigate }) => {
   const banking = data.banking || [];
   const investments = data.investments || [];
   const renewals = collectRenewals(data, people).filter((item) => item.days <= 60);
-  const totalInvestmentValue = investments.reduce((sum, inv) => sum + (Number(inv.currentValue) || 0), 0);
   const [backupError, setBackupError] = useState('');
   const [, setBackupTick] = useState(0);
   const lastBackup = getLastBackupAt(vault.meta?.id);
@@ -35,11 +34,6 @@ const Dashboard = ({ onNavigate }) => {
     { title: t('nav.banking'), value: banking.length, icon: CreditCard, tint: 'from-emerald-400 to-teal-500', section: 'banking' },
     { title: t('dash.attention'), value: renewals.length, icon: AlertTriangle, tint: 'from-amber-400 to-orange-500' },
   ];
-
-  const barData = investments.map((inv) => ({
-    name: (inv.name || 'Fund').slice(0, 8),
-    value: Number(inv.currentValue) || 0,
-  }));
 
   const handleBackup = async () => {
     try {
@@ -164,26 +158,7 @@ const Dashboard = ({ onNavigate }) => {
         </button>
       </div>
 
-      <div className="glass-panel rounded-3xl p-6">
-        <h3 className="text-white font-medium mb-4">{t('nav.investments')}</h3>
-        {barData.length === 0 ? (
-          <p className="text-white/40 text-sm">{t('dash.noInvestments')}</p>
-        ) : (
-          <>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={barData}>
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
-                <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, color: '#fff' }} />
-                <Bar dataKey="value" fill="#67e8f9" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-            {totalInvestmentValue > 0 && (
-              <p className="text-white/40 text-sm mt-3">{t('dash.recorded', { value: (totalInvestmentValue / 1000).toFixed(1) })}</p>
-            )}
-          </>
-        )}
-      </div>
+      <InvestmentOverview investments={investments} people={people} onNavigate={onNavigate} />
 
       <div className="glass-panel rounded-3xl p-6 space-y-3">
         <h3 className="text-white font-medium">{t('dash.encrypted')}</h3>
