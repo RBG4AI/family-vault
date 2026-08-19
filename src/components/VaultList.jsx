@@ -36,8 +36,15 @@ const VaultList = ({ vaults, onSelect, onCreate, onImport }) => {
           </div>
           <p className="text-xs tracking-[0.22em] uppercase text-cyan-300/70 mb-2">{t('app.onDevice')}</p>
           <h1 className="font-display text-4xl text-white mb-2">{t('app.title')}</h1>
-          <p className="text-white/45">{t('app.tagline')}</p>
+        <p className="text-white/45">{t('app.tagline')}</p>
         </div>
+
+        {vaults.length > 0 && (
+          <div className="rounded-3xl p-4 mb-6 bg-gradient-to-br from-cyan-400 to-blue-500 text-white">
+            <p className="font-display text-2xl">{vaults.length}</p>
+            <p className="text-xs opacity-90 mt-1">{t('list.vaultCount', { count: vaults.length })}</p>
+          </div>
+        )}
 
         <StorageDisclaimer className="mb-6" />
 
@@ -46,38 +53,41 @@ const VaultList = ({ vaults, onSelect, onCreate, onImport }) => {
             <button
               key={vault.id}
               onClick={() => onSelect(vault.id)}
-              className="w-full flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-colors text-left"
+              className="w-full overflow-hidden rounded-2xl text-left border border-white/10 hover:border-white/25"
             >
-              <div className="w-12 h-12 rounded-xl bg-cyan-400/10 flex items-center justify-center">
-                {vault.kind === 'family' ? <Users className="w-6 h-6 text-cyan-300" /> : <Shield className="w-6 h-6 text-violet-300" />}
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-white font-medium truncate">{vault.name}</h3>
-                <p className="text-white/40 text-sm">
-                  {vault.isLegacy ? t('list.legacy') : vault.kind === 'family' ? t('list.familyVault') : t('list.personalVault')}
-                </p>
+              <div className={`h-1.5 bg-gradient-to-r ${vault.kind === 'family' ? 'from-cyan-400 to-blue-500' : 'from-violet-400 to-fuchsia-500'}`} />
+              <div className="flex items-center gap-4 p-4 bg-white/5 hover:bg-white/10">
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${vault.kind === 'family' ? 'from-cyan-400 to-blue-500' : 'from-violet-400 to-fuchsia-500'} flex items-center justify-center`}>
+                  {vault.kind === 'family' ? <Users className="w-6 h-6 text-white" /> : <Shield className="w-6 h-6 text-white" />}
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-white font-medium truncate">{vault.name}</h3>
+                  <p className="text-white/40 text-sm">
+                    {vault.isLegacy ? t('list.legacy') : vault.kind === 'family' ? t('list.familyVault') : t('list.personalVault')}
+                  </p>
+                </div>
               </div>
             </button>
           ))}
 
           <button
             onClick={onCreate}
-            className="w-full flex items-center gap-4 p-4 border-2 border-dashed border-white/15 rounded-2xl hover:border-cyan-400/40 hover:bg-cyan-400/5 transition-colors"
+            className="w-full flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-teal-500/10 border border-emerald-400/20 hover:border-emerald-300/40"
           >
-            <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
-              <Plus className="w-6 h-6 text-white/50" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
+              <Plus className="w-6 h-6 text-white" />
             </div>
-            <span className="text-white/80 font-medium">{t('list.create')}</span>
+            <span className="text-white font-medium">{t('list.create')}</span>
           </button>
 
-          <div className="w-full p-4 bg-white/5 rounded-2xl space-y-3">
+          <div className="w-full p-4 rounded-2xl bg-gradient-to-br from-amber-400/15 to-orange-500/10 border border-amber-400/20 space-y-3">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
-                <FileKey className="w-6 h-6 text-white/50" />
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                <FileKey className="w-6 h-6 text-white" />
               </div>
               <div>
-                <label htmlFor="vault-backup-import" className="text-white/80 font-medium block">{t('list.import')}</label>
-                <p className="text-white/35 text-sm">{t('list.importHint')}</p>
+                <label htmlFor="vault-backup-import" className="text-white font-medium block">{t('list.import')}</label>
+                <p className="text-white/50 text-sm">{t('list.importHint')}</p>
               </div>
             </div>
             <input

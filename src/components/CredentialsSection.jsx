@@ -210,9 +210,7 @@ const CredentialsSection = ({ type, title, onNavigate, focusId, onFocusHandled, 
         )}
       </motion.div>
 
-      {!isEmptyVault && (type === 'vehicles' || type === 'properties') && (
-        <AssetSummary type={type} items={items} />
-      )}
+      {!isEmptyVault && <AssetSummary type={type} items={items} />}
 
       {!isEmptyVault && (
         <SmartSearch
@@ -261,7 +259,7 @@ const CredentialsSection = ({ type, title, onNavigate, focusId, onFocusHandled, 
               ) : type === 'properties' ? (
                 <PropertyCard item={item} onEdit={handleEdit} onDelete={handleDelete} highlighted={highlightId === item.id} />
               ) : (
-                <CredentialCard credential={item} onEdit={handleEdit} onDelete={handleDelete} highlighted={highlightId === item.id} />
+                <CredentialCard kind={type} credential={item} onEdit={handleEdit} onDelete={handleDelete} highlighted={highlightId === item.id} />
               )}
             </motion.div>
           ))}

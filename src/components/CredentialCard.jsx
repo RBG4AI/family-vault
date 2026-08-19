@@ -1,187 +1,297 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Eye, EyeOff, Copy, Edit, Trash2, Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { CreditCard, FileText, Key, Landmark, Mail, Shield, StickyNote, TrendingUp } from 'lucide-react';
 import { copyToClipboard, storage } from '../utils/storage';
 import { useToast } from '../context/ToastContext';
 import { useI18n } from '../context/I18nContext';
+import { optionLabel } from '../utils/telLink';
+import { formatInr, holdingValue } from '../utils/money';
+import { CopyTile, DueTile, InfoTile, RecordShell, SecretTile } from './recordBits';
 
-const maskLast4 = (value) => {
-  const text = String(value);
-  if (text.length <= 4) return '••••';
-  return `${'•'.repeat(Math.min(8, text.length - 4))}${text.slice(-4)}`;
+const KIND = {
+  credentials: { icon: Key, bar: 'from-violet-400 to-fuchsia-500' },
+  emails: { icon: Mail, bar: 'from-sky-400 to-blue-500' },
+  banking: { icon: Landmark, bar: 'from-emerald-400 to-teal-500' },
+  notes: { icon: StickyNote, bar: 'from-amber-400 to-orange-500' },
 };
 
-const maskAll = (value) => '•'.repeat(Math.min(12, Math.max(6, String(value).length)));
+const CARD_THEME = {
+  'Credit Card': { icon: CreditCard, bar: 'from-amber-400 to-rose-500' },
+  'Debit Card': { icon: CreditCard, bar: 'from-cyan-400 to-indigo-500' },
+};
 
-const titleFor = (item) =>
-  item.title ||
-  item.bankName ||
-  item.emailAddress ||
-  item.name ||
-  item.appName ||
-  item.documentType ||
-  item.insuranceType ||
-  item.cardType ||
-  item.provider ||
-  item.registrationNumber ||
-  item.policyNumber;
+const GOV_THEME = {
+  'PAN Card': { icon: FileText, bar: 'from-orange-400 to-amber-500' },
+  'Aadhaar Card': { icon: FileText, bar: 'from-violet-400 to-indigo-500' },
+  Passport: { icon: FileText, bar: 'from-sky-400 to-blue-600' },
+  UAN: { icon: FileText, bar: 'from-teal-400 to-emerald-600' },
+  'Driving License': { icon: FileText, bar: 'from-lime-400 to-green-600' },
+  'Voter ID': { icon: FileText, bar: 'from-rose-400 to-pink-500' },
+  'Ration Card': { icon: FileText, bar: 'from-amber-400 to-orange-600' },
+};
 
-const SECRET_KEYS = new Set(['password', 'cvv', 'pin', 'netBankingPassword', 'transactionPin', 'mobilePin', 'twoFactorCodes']);
-const LAST4_KEYS = new Set(['accountNumber', 'cardNumber', 'documentNumber', 'policyNumber']);
+const INS_THEME = {
+  'Health Insurance': { icon: Shield, bar: 'from-rose-400 to-red-500' },
+  'Life Insurance': { icon: Shield, bar: 'from-violet-400 to-purple-600' },
+  'Term Insurance': { icon: Shield, bar: 'from-indigo-400 to-blue-600' },
+  'Motor Insurance': { icon: Shield, bar: 'from-orange-400 to-amber-600' },
+  'Home Insurance': { icon: Shield, bar: 'from-amber-400 to-yellow-500' },
+  'Travel Insurance': { icon: Shield, bar: 'from-cyan-400 to-sky-500' },
+};
 
-const fieldsFor = (item) =>
-  [
-    ['username', item.username],
-    ['emailAddress', item.emailAddress],
-    ['recoveryEmail', item.recoveryEmail],
-    ['password', item.password],
-    ['twoFactorCodes', item.twoFactorCodes],
-    ['accountNumber', item.accountNumber],
-    ['ifscCode', item.ifscCode],
-    ['nominee', item.nominee],
-    ['customerId', item.customerId],
-    ['netBankingUser', item.netBankingUser],
-    ['cardNumber', item.cardNumber],
-    ['cvv', item.cvv],
-    ['pin', item.pin],
-    ['expiryDate', item.expiryDate],
-    ['creditLimit', item.creditLimit],
-    ['billingDate', item.billingDate],
-    ['dueDate', item.dueDate],
-    ['documentNumber', item.documentNumber],
-    ['holderName', item.holderName],
-    ['policyNumber', item.policyNumber],
-    ['policyEndDate', item.policyEndDate],
-    ['sumAssured', item.sumAssured],
-    ['currentValue', item.currentValue],
-    ['amountInvested', item.amountInvested],
-    ['platform', item.platform],
-    ['registrationNumber', item.registrationNumber],
-    ['insurer', item.insurer],
-    ['insuranceExpiry', item.insuranceExpiry],
-    ['pucExpiry', item.pucExpiry],
-    ['rcExpiry', item.rcExpiry],
-    ['address', item.address],
-    ['taxDueDate', item.taxDueDate],
-    ['vehicleType', item.vehicleType],
-    ['propertyType', item.propertyType],
-    ['content', item.content || item.notes],
-  ].filter(([, value]) => value !== undefined && value !== null && value !== '' && value !== false).slice(0, 12);
+const INV_THEME = {
+  'Mutual Fund': { icon: TrendingUp, bar: 'from-cyan-400 to-blue-500' },
+  Stock: { icon: TrendingUp, bar: 'from-violet-400 to-fuchsia-500' },
+  'Demat Account': { icon: TrendingUp, bar: 'from-indigo-400 to-blue-600' },
+  FD: { icon: TrendingUp, bar: 'from-emerald-400 to-teal-600' },
+  RD: { icon: TrendingUp, bar: 'from-lime-400 to-green-600' },
+  PPF: { icon: TrendingUp, bar: 'from-amber-400 to-orange-500' },
+  EPF: { icon: TrendingUp, bar: 'from-orange-400 to-rose-500' },
+  'NPS/PRAN': { icon: TrendingUp, bar: 'from-sky-400 to-indigo-500' },
+  Gold: { icon: TrendingUp, bar: 'from-yellow-400 to-amber-600' },
+  Crypto: { icon: TrendingUp, bar: 'from-fuchsia-400 to-purple-600' },
+};
 
-const CredentialCard = ({ credential, onEdit, onDelete, highlighted }) => {
+const titleFor = (item, kind) => {
+  if (kind === 'credentials') return item.appName || item.title;
+  if (kind === 'emails') return item.emailAddress;
+  if (kind === 'banking') return item.bankName;
+  if (kind === 'cards') return item.bankName || item.cardType;
+  if (kind === 'government') return item.documentType || item.holderName;
+  if (kind === 'insurance') return item.provider || item.insuranceType;
+  if (kind === 'investments') return item.name;
+  if (kind === 'notes') return item.title;
+  return item.title || item.name || item.appName;
+};
+
+const themeFor = (item, kind) => {
+  if (kind === 'cards') return CARD_THEME[item.cardType] || CARD_THEME['Debit Card'];
+  if (kind === 'government') return GOV_THEME[item.documentType] || { icon: FileText, bar: 'from-slate-400 to-slate-600' };
+  if (kind === 'insurance') return INS_THEME[item.insuranceType] || { icon: Shield, bar: 'from-slate-400 to-slate-600' };
+  if (kind === 'investments') return INV_THEME[item.investmentType] || { icon: TrendingUp, bar: 'from-slate-400 to-slate-600' };
+  return KIND[kind] || KIND.credentials;
+};
+
+const CredentialCard = ({ credential, kind, onEdit, onDelete, highlighted }) => {
   const [revealed, setRevealed] = useState({});
   const [copied, setCopied] = useState('');
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const { toast } = useToast();
   const { t } = useI18n();
   const people = storage.get('people') || [];
-  const person = people.find((item) => item.id === credential.personId);
+  const person = people.find((row) => row.id === credential.personId);
+  const theme = themeFor(credential, kind);
+  const Icon = theme.icon;
 
-  useEffect(() => {
-    if (!confirmDelete) return undefined;
-    const timer = window.setTimeout(() => setConfirmDelete(false), 4000);
-    return () => window.clearTimeout(timer);
-  }, [confirmDelete]);
-
-  const handleCopy = async (text, field) => {
-    const success = await copyToClipboard(text);
-    if (success) {
+  const copy = async (value, field) => {
+    if (value === undefined || value === null || value === '') return;
+    const ok = await copyToClipboard(String(value));
+    if (ok) {
       setCopied(field);
       toast(t('common.copied'));
-      setTimeout(() => setCopied(''), 2000);
+      window.setTimeout(() => setCopied(''), 2000);
     }
   };
 
-  const subtitle =
-    person?.name ||
-    credential.username ||
-    credential.emailAddress ||
-    credential.holderName ||
-    credential.policyHolderName ||
-    credential.registrationNumber ||
-    t('common.storedSecurely');
+  const toggle = (field) => setRevealed((current) => ({ ...current, [field]: !current[field] }));
+
+  const secret = (field, last4) => (
+    <SecretTile
+      label={t(`field.${field}`)}
+      value={credential[field]}
+      shown={revealed[field]}
+      onToggle={() => toggle(field)}
+      onCopy={() => copy(credential[field], field)}
+      copied={copied === field}
+      last4={last4}
+      t={t}
+    />
+  );
+
+  const copyField = (field, mono) => (
+    <CopyTile
+      label={t(`field.${field}`)}
+      value={credential[field]}
+      onCopy={() => copy(credential[field], field)}
+      copied={copied === field}
+      mono={mono}
+    />
+  );
+
+  const subtitle = [
+    kind === 'cards' ? optionLabel(t, credential.cardType) : '',
+    kind === 'government' ? credential.holderName : '',
+    kind === 'insurance' ? optionLabel(t, credential.insuranceType) : '',
+    kind === 'investments' ? optionLabel(t, credential.investmentType) : '',
+    person?.name,
+  ].filter(Boolean).join(' · ') || t('common.storedSecurely');
+
+  const invested = Number(credential.amountInvested) || 0;
+  const current = holdingValue(credential);
+  const delta = current - invested;
+  const twoFaOn = Boolean(credential.twoFactorEnabled);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className={`glass-panel rounded-2xl md:rounded-3xl p-4 md:p-6 hover:border-white/15 transition-all duration-300 ${highlighted ? 'ring-2 ring-cyan-400/70' : ''}`}
+    <RecordShell
+      bar={theme.bar}
+      Icon={Icon}
+      title={titleFor(credential, kind) || t('common.untitled')}
+      subtitle={subtitle}
+      highlighted={highlighted}
+      onEdit={() => onEdit(credential)}
+      onDelete={() => onDelete(credential.id)}
+      t={t}
     >
-      <div className="flex items-start justify-between mb-4">
-        <div className="min-w-0 pr-3">
-          <h3 className="text-base md:text-lg font-semibold text-white mb-1 truncate">{titleFor(credential) || t('common.untitled')}</h3>
-          <p className="text-white/45 text-xs md:text-sm truncate">{subtitle}</p>
-        </div>
-        <div className="flex gap-2 shrink-0">
-          <button type="button" onClick={() => onEdit(credential)} className="p-2 text-white/40 hover:text-cyan-300 hover:bg-white/5 rounded-lg" aria-label={t('common.edit')}>
-            <Edit size={16} />
-          </button>
-          {confirmDelete ? (
-            <button
-              type="button"
-              onClick={() => onDelete(credential.id)}
-              className="px-2 text-xs text-rose-300 hover:bg-rose-500/20 rounded-lg"
-            >
-              {t('people.confirmDelete')}
-            </button>
-          ) : (
-            <button type="button" onClick={() => setConfirmDelete(true)} className="p-2 text-white/40 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg" aria-label={t('common.delete')}>
-              <Trash2 size={16} />
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        {fieldsFor(credential).map(([key, value]) => {
-          const isSecret = SECRET_KEYS.has(key);
-          const shown = revealed[key];
-          const display = !isSecret && !LAST4_KEYS.has(key)
-            ? String(value)
-            : shown
-              ? String(value)
-              : LAST4_KEYS.has(key)
-                ? maskLast4(value)
-                : maskAll(value);
-          return (
-            <div key={key} className="flex items-center gap-2 bg-white/5 rounded-xl px-3 py-2">
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] text-white/35">{t(`field.${key}`)}</p>
-                <p className="text-white font-mono text-sm truncate">{display}</p>
-              </div>
-              {(isSecret || LAST4_KEYS.has(key)) && (
-                <button
-                  type="button"
-                  aria-label={shown ? t('common.hide') : t('common.reveal')}
-                  onClick={() => setRevealed((current) => ({ ...current, [key]: !current[key] }))}
-                  className="text-white/40 hover:text-white"
-                >
-                  {shown ? <EyeOff size={14} /> : <Eye size={14} />}
-                </button>
-              )}
-              <button
-                type="button"
-                aria-label={t('common.copy')}
-                onClick={() => handleCopy(String(value), key)}
-                className="text-white/40 hover:text-white"
-              >
-                {copied === key ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
-              </button>
-            </div>
-          );
-        })}
-
-        {credential.tags?.length > 0 && (
-          <div className="flex gap-2 flex-wrap pt-1">
-            {credential.tags.map((tag) => (
-              <span key={tag} className="px-2 py-1 bg-cyan-400/10 text-cyan-200/80 text-xs rounded-full">
-                {tag}
-              </span>
-            ))}
+      {kind === 'credentials' && (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            {copyField('username', true)}
+            <InfoTile label={t('field.twoFactorEnabled')} className={twoFaOn ? 'bg-emerald-400/20 text-emerald-100' : 'bg-amber-400/15 text-amber-100'}>
+              {twoFaOn ? t('assets.with2fa') : t('assets.no2fa')}
+            </InfoTile>
           </div>
-        )}
-      </div>
-    </motion.div>
+          <div className="grid grid-cols-1 gap-2">
+            {secret('password')}
+            {secret('twoFactorCodes')}
+          </div>
+        </>
+      )}
+
+      {kind === 'emails' && (
+        <>
+          {copyField('emailAddress', true)}
+          <div className="grid grid-cols-2 gap-2">
+            <InfoTile label={t('field.twoFactorEnabled')} className={twoFaOn ? 'bg-emerald-400/20 text-emerald-100' : 'bg-amber-400/15 text-amber-100'}>
+              {twoFaOn ? t('assets.with2fa') : t('assets.no2fa')}
+            </InfoTile>
+            {copyField('recoveryEmail', true)}
+            {copyField('recoveryPhone')}
+          </div>
+          {secret('password')}
+          {secret('twoFactorCodes')}
+        </>
+      )}
+
+      {kind === 'banking' && (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            {secret('accountNumber', true)}
+            {copyField('ifscCode', true)}
+            {copyField('customerId', true)}
+            {copyField('nominee')}
+            {copyField('netBankingUser', true)}
+          </div>
+          <div className="grid grid-cols-1 gap-2">
+            {secret('netBankingPassword')}
+            {secret('transactionPin')}
+            {secret('mobilePin')}
+          </div>
+        </>
+      )}
+
+      {kind === 'cards' && (
+        <>
+          <div className={`rounded-2xl p-4 bg-gradient-to-br ${theme.bar} text-white`}>
+            <p className="text-xs opacity-80">{optionLabel(t, credential.cardType)}</p>
+            <p className="font-mono text-lg tracking-widest mt-3">•••• {String(credential.cardNumber || '').slice(-4)}</p>
+            <p className="text-sm mt-3 truncate">{credential.cardHolderName}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <DueTile label={t('field.expiryDate')} iso={credential.expiryDate} t={t} />
+            {credential.creditLimit ? (
+              <InfoTile label={t('field.creditLimit')} className="bg-white/5 text-white">{formatInr(credential.creditLimit)}</InfoTile>
+            ) : null}
+            {credential.billingDate ? (
+              <InfoTile label={t('field.billingDate')} className="bg-cyan-400/15 text-cyan-100">
+                {t('assets.dayOfMonth', { day: credential.billingDate })}
+              </InfoTile>
+            ) : null}
+            {credential.dueDate ? (
+              <InfoTile label={t('field.dueDate')} className="bg-amber-400/15 text-amber-100">
+                {t('assets.dayOfMonth', { day: credential.dueDate })}
+              </InfoTile>
+            ) : null}
+          </div>
+          {secret('cardNumber', true)}
+          <div className="grid grid-cols-2 gap-2">
+            {secret('cvv')}
+            {secret('pin')}
+          </div>
+        </>
+      )}
+
+      {kind === 'government' && (
+        <>
+          {secret('documentNumber', true)}
+          <div className="grid grid-cols-2 gap-2">
+            {copyField('holderName')}
+            <DueTile label={t('field.expiryDate')} iso={credential.expiryDate} t={t} />
+            {credential.issueDate ? <DueTile label={t('field.issueDate')} iso={credential.issueDate} t={t} /> : null}
+            {copyField('issuingAuthority')}
+          </div>
+        </>
+      )}
+
+      {kind === 'insurance' && (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            {copyField('policyNumber', true)}
+            {copyField('provider')}
+            {credential.sumAssured ? (
+              <InfoTile label={t('field.sumAssured')} className="bg-emerald-400/15 text-emerald-100">{formatInr(credential.sumAssured)}</InfoTile>
+            ) : null}
+            {credential.premiumAmount ? (
+              <InfoTile label={t('field.premiumAmount')} className="bg-violet-400/15 text-violet-100">
+                {formatInr(credential.premiumAmount)}
+                {credential.premiumFrequency ? ` · ${optionLabel(t, credential.premiumFrequency)}` : ''}
+              </InfoTile>
+            ) : null}
+            <DueTile label={t('field.policyEndDate')} iso={credential.policyEndDate} t={t} />
+            {copyField('nominee')}
+          </div>
+          {(credential.agentName || credential.agentContact) && (
+            <div className="grid grid-cols-2 gap-2">
+              {copyField('agentName')}
+              {copyField('agentContact')}
+            </div>
+          )}
+        </>
+      )}
+
+      {kind === 'investments' && (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            <InfoTile label={t('field.currentValue')} className="bg-emerald-400/20 text-emerald-100">{formatInr(current)}</InfoTile>
+            <InfoTile label={t('field.amountInvested')} className="bg-white/5 text-white">{formatInr(invested)}</InfoTile>
+            <InfoTile
+              label={delta >= 0 ? t('assets.gain') : t('assets.loss')}
+              className={delta > 0 ? 'bg-cyan-400/20 text-cyan-100' : delta < 0 ? 'bg-rose-400/20 text-rose-100' : 'bg-white/5 text-white/70'}
+            >
+              {delta === 0 ? t('assets.sameValue') : `${delta > 0 ? '+' : ''}${formatInr(delta)}`}
+            </InfoTile>
+            {copyField('platform')}
+            {secret('accountNumber', true)}
+            {copyField('nominee')}
+            <DueTile label={t('field.maturityDate')} iso={credential.maturityDate} t={t} />
+            {credential.purchaseDate ? <DueTile label={t('field.purchaseDate')} iso={credential.purchaseDate} t={t} /> : null}
+          </div>
+        </>
+      )}
+
+      {kind === 'notes' && (
+        <div className="rounded-2xl bg-gradient-to-br from-amber-400/20 to-orange-500/10 border border-amber-300/10 p-4">
+          {secret('content')}
+        </div>
+      )}
+
+      {credential.notes && kind !== 'notes' ? <p className="text-white/45 text-sm">{credential.notes}</p> : null}
+
+      {credential.tags?.length > 0 && (
+        <div className="flex gap-2 flex-wrap">
+          {credential.tags.map((tag) => (
+            <span key={tag} className="px-2 py-1 bg-white/10 text-white/70 text-xs rounded-full">{tag}</span>
+          ))}
+        </div>
+      )}
+    </RecordShell>
   );
 };
 

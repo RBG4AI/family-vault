@@ -52,12 +52,13 @@ const ThemeToggle = () => {
           <Palette className="w-5 h-5" />
           {t('settings.theme')}
         </h4>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {[
-            { id: 'dark', name: t('settings.dark'), icon: Moon },
-            { id: 'light', name: t('settings.light'), icon: Sun },
+            { id: 'dark', name: t('settings.dark'), icon: Moon, tint: 'from-slate-600 to-slate-800' },
+            { id: 'light', name: t('settings.light'), icon: Sun, tint: 'from-amber-300 to-orange-400' },
           ].map((item) => {
             const Icon = item.icon;
+            const active = theme === item.id;
             return (
               <motion.button
                 key={item.id}
@@ -65,12 +66,12 @@ const ThemeToggle = () => {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => changeTheme(item.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl ${
-                  theme === item.id ? 'bg-white/15 text-white' : 'bg-white/5 text-white/50 hover:text-white'
+                className={`rounded-2xl p-4 text-left ${
+                  active ? `bg-gradient-to-br ${item.tint} text-white` : 'bg-white/5 text-white/50'
                 }`}
               >
-                <Icon size={16} />
-                {item.name}
+                <Icon size={18} />
+                <p className="font-medium mt-2">{item.name}</p>
               </motion.button>
             );
           })}
@@ -78,17 +79,17 @@ const ThemeToggle = () => {
       </div>
       <div>
         <h4 className="text-white font-medium mb-3">{t('settings.accent')}</h4>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-4 gap-2">
           {Object.entries(ACCENTS).map(([id, color]) => (
             <motion.button
               key={id}
               type="button"
-              whileHover={{ scale: 1.08 }}
+              whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => changeAccent(id)}
               aria-label={id}
-              style={{ backgroundColor: color }}
-              className={`w-8 h-8 rounded-full ${accentColor === id ? 'ring-2 ring-white ring-offset-2 ring-offset-dark-800' : ''}`}
+              style={{ background: `linear-gradient(135deg, ${color}, ${color}cc)` }}
+              className={`h-14 rounded-2xl ${accentColor === id ? 'ring-2 ring-white ring-offset-2 ring-offset-dark-800' : ''}`}
             />
           ))}
         </div>

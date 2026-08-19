@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronRight, Phone, Plus, Users, X } from 'lucide-react';
+import { ChevronRight, Droplets, Phone, Plus, Users, X } from 'lucide-react';
 import { storage } from '../utils/storage';
 import AddCredentialModal from './AddCredentialModal';
 import { useI18n } from '../context/I18nContext';
@@ -57,6 +57,18 @@ const relinkPerson = (personId, snapshot) => {
     );
   });
 };
+
+const REL_TINT = {
+  Self: 'from-cyan-400 to-blue-500',
+  Spouse: 'from-rose-400 to-fuchsia-500',
+  Parent: 'from-amber-400 to-orange-500',
+  Child: 'from-emerald-400 to-teal-500',
+  Sibling: 'from-violet-400 to-indigo-500',
+  Grandparent: 'from-lime-400 to-emerald-600',
+  Other: 'from-slate-400 to-slate-600',
+};
+
+const REL_KEYS = ['Self', 'Spouse', 'Parent', 'Child', 'Sibling', 'Grandparent', 'Other'];
 
 const QUICK_ADD = [
   { form: 'app', bucket: 'credentials', nav: 'credentials' },
@@ -138,11 +150,12 @@ const PeopleSection = ({ onNavigate, focusId, onFocusHandled, onBack }) => {
   const emergencyHref = selectedPerson ? telHref(selectedPerson.emergencyPhone) : '';
   const phoneHref = selectedPerson ? telHref(selectedPerson.phone) : '';
   const age = selectedPerson ? ageFromBirthday(selectedPerson.birthday) : null;
+  const withBlood = people.filter((person) => person.bloodGroup && person.bloodGroup !== 'Unknown').length;
 
   return (
     <div className="p-4 md:p-8 mt-16">
       <BackButton onClick={onBack} />
-      <div className="flex items-end justify-between mb-8">
+      <div className="flex items-end justify-between mb-6">
         <div>
           <p className="text-xs tracking-[0.2em] uppercase text-cyan-300/80 mb-2">{t('nav.family')}</p>
           <h1 className="font-display text-3xl md:text-4xl text-white">{t('nav.people')}</h1>
@@ -153,6 +166,29 @@ const PeopleSection = ({ onNavigate, focusId, onFocusHandled, onBack }) => {
         </button>
       </div>
 
+      {people.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
+          <div className="rounded-3xl p-4 bg-gradient-to-br from-white/10 to-white/5 border border-white/10">
+            <p className="text-white/45 text-xs">{t('common.items')}</p>
+            <p className="text-white font-display text-2xl mt-1">{people.length}</p>
+          </div>
+          {REL_KEYS.map((key) => {
+            const count = people.filter((person) => person.relation === key).length;
+            return (
+              <div key={key} className={`rounded-3xl p-4 bg-gradient-to-br ${REL_TINT[key]} text-white`}>
+                <p className="font-display text-2xl">{count}</p>
+                <p className="text-xs opacity-90 mt-0.5">{optionLabel(t, key)}</p>
+              </div>
+            );
+          })}
+          <div className="rounded-3xl p-4 bg-gradient-to-br from-rose-400 to-red-500 text-white">
+            <Droplets size={16} />
+            <p className="font-display text-2xl mt-1">{withBlood}</p>
+            <p className="text-xs opacity-90 mt-0.5">{t('field.bloodGroup')}</p>
+          </div>
+        </div>
+      )}
+
       {people.length === 0 ? (
         <div className="glass-panel rounded-3xl p-12 text-center">
           <Users className="w-10 h-10 text-white/30 mx-auto mb-4" />
@@ -160,33 +196,50 @@ const PeopleSection = ({ onNavigate, focusId, onFocusHandled, onBack }) => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {people.map((person, index) => (
-            <motion.button
-              key={person.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              onClick={() => setSelected(person.id)}
-              className="glass-panel rounded-3xl p-5 text-left hover:border-white/20 transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center text-lg font-semibold">
-                  {initials(person.name)}
+          {people.map((person, index) => {
+            const tint = REL_TINT[person.relation] || REL_TINT.Other;
+            const personAge = ageFromBirthday(person.birthday);
+            const records = linkedFor(person.id).length;
+            return (
+              <motion.button
+                key={person.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                onClick={() => setSelected(person.id)}
+                className="glass-panel rounded-3xl overflow-hidden text-left hover:border-white/20 transition-colors"
+              >
+                <div className={`h-2 bg-gradient-to-r ${tint}`} />
+                <div className="p-5 space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${tint} flex items-center justify-center text-lg font-semibold text-white`}>
+                      {initials(person.name)}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-white font-semibold truncate">{person.name}</h3>
+                      <p className="text-white/45 text-sm truncate">
+                        {person.relation ? optionLabel(t, person.relation) : t('people.familyMember')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="rounded-2xl bg-white/5 px-3 py-2">
+                      <p className="text-[11px] text-white/40">{t('field.birthday')}</p>
+                      <p className="text-white text-sm mt-0.5">{personAge != null ? t('people.yearsOld', { age: personAge }) : '—'}</p>
+                    </div>
+                    <div className="rounded-2xl bg-rose-400/15 px-3 py-2">
+                      <p className="text-[11px] text-rose-100/70">{t('field.bloodGroup')}</p>
+                      <p className="text-rose-50 text-sm mt-0.5">{person.bloodGroup ? optionLabel(t, person.bloodGroup) : '—'}</p>
+                    </div>
+                    <div className="rounded-2xl bg-cyan-400/15 px-3 py-2">
+                      <p className="text-[11px] text-cyan-100/70">{t('people.records')}</p>
+                      <p className="text-cyan-50 text-sm mt-0.5">{records}</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <h3 className="text-white font-semibold truncate">{person.name}</h3>
-                  <p className="text-white/45 text-sm truncate">
-                    {[
-                      person.relation ? t(`option.${person.relation}`) : '',
-                      ageFromBirthday(person.birthday) != null
-                        ? t('people.yearsOld', { age: ageFromBirthday(person.birthday) })
-                        : person.birthday || '',
-                    ].filter(Boolean).join(' · ')}
-                  </p>
-                </div>
-              </div>
-            </motion.button>
-          ))}
+              </motion.button>
+            );
+          })}
         </div>
       )}
 
@@ -197,14 +250,7 @@ const PeopleSection = ({ onNavigate, focusId, onFocusHandled, onBack }) => {
             <div className="flex items-start justify-between mb-4 gap-3">
               <div className="min-w-0">
                 <h2 className="text-2xl font-display text-white">{selectedPerson.name}</h2>
-                {selectedPerson.relation ? <p className="text-white/50 text-sm">{t(`option.${selectedPerson.relation}`)}</p> : null}
-                {age != null && <p className="text-white/40 text-sm">{t('people.yearsOld', { age })}</p>}
-                {selectedPerson.bloodGroup && (
-                  <p className="text-white/40 text-sm mt-2">{t('field.bloodGroup')} {optionLabel(t, selectedPerson.bloodGroup)}</p>
-                )}
-                {selectedPerson.allergies ? <p className="text-white/40 text-sm">{t('field.allergies')} {selectedPerson.allergies}</p> : null}
-                {selectedPerson.doctorName ? <p className="text-white/40 text-sm">{t('field.doctorName')} {selectedPerson.doctorName}</p> : null}
-                {selectedPerson.lockerHint ? <p className="text-white/40 text-sm mt-1">{selectedPerson.lockerHint}</p> : null}
+                {selectedPerson.relation ? <p className="text-white/50 text-sm">{optionLabel(t, selectedPerson.relation)}</p> : null}
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <button type="button" className="text-sm text-cyan-300 px-2 py-1" onClick={() => { setEdit(selectedPerson); setOpen(true); }}>{t('common.edit')}</button>
@@ -217,6 +263,35 @@ const PeopleSection = ({ onNavigate, focusId, onFocusHandled, onBack }) => {
                   <X size={20} />
                 </button>
               </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <div className="rounded-2xl bg-cyan-400/15 px-3 py-2.5">
+                <p className="text-[11px] text-cyan-100/70">{t('field.birthday')}</p>
+                <p className="text-cyan-50 text-sm mt-0.5">{age != null ? t('people.yearsOld', { age }) : '—'}</p>
+              </div>
+              <div className="rounded-2xl bg-rose-400/15 px-3 py-2.5">
+                <p className="text-[11px] text-rose-100/70">{t('field.bloodGroup')}</p>
+                <p className="text-rose-50 text-sm mt-0.5">{selectedPerson.bloodGroup ? optionLabel(t, selectedPerson.bloodGroup) : t('people.noBlood')}</p>
+              </div>
+              {selectedPerson.allergies ? (
+                <div className="rounded-2xl bg-amber-400/15 px-3 py-2.5 col-span-2">
+                  <p className="text-[11px] text-amber-100/70">{t('field.allergies')}</p>
+                  <p className="text-amber-50 text-sm mt-0.5">{selectedPerson.allergies}</p>
+                </div>
+              ) : null}
+              {selectedPerson.doctorName ? (
+                <div className="rounded-2xl bg-violet-400/15 px-3 py-2.5 col-span-2">
+                  <p className="text-[11px] text-violet-100/70">{t('field.doctorName')}</p>
+                  <p className="text-violet-50 text-sm mt-0.5">{selectedPerson.doctorName}</p>
+                </div>
+              ) : null}
+              {selectedPerson.lockerHint ? (
+                <div className="rounded-2xl bg-white/5 px-3 py-2.5 col-span-2">
+                  <p className="text-[11px] text-white/40">{t('field.lockerHint')}</p>
+                  <p className="text-white/80 text-sm mt-0.5">{selectedPerson.lockerHint}</p>
+                </div>
+              ) : null}
             </div>
 
             {(emergencyHref || phoneHref || selectedPerson.email) && (

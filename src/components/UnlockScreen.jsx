@@ -35,6 +35,18 @@ const UnlockScreen = ({ vault, onUnlock, onBack, onRecovery, busy, error }) => {
           </p>
         </div>
 
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-2xl p-3 bg-gradient-to-br from-cyan-400/20 to-blue-500/10 text-center">
+            <p className="text-[11px] text-cyan-100 leading-tight">{t('unlock.local')}</p>
+          </div>
+          <div className="rounded-2xl p-3 bg-gradient-to-br from-violet-400/20 to-fuchsia-500/10 text-center">
+            <p className="text-[11px] text-violet-100 leading-tight">{t('unlock.neverStored')}</p>
+          </div>
+          <div className="rounded-2xl p-3 bg-gradient-to-br from-emerald-400/20 to-teal-500/10 text-center">
+            <p className="text-[11px] text-emerald-100 leading-tight">{vault?.isLegacy ? t('list.legacy') : t('unlock.recoveryReady')}</p>
+          </div>
+        </div>
+
         <div className="relative">
           <SecretInput
             type={show ? 'text' : 'password'}

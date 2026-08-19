@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Eye, EyeOff, Lock } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, Lock, Shield, Users } from 'lucide-react';
 import PasswordStrengthMeter from './PasswordStrengthMeter';
 import { passwordScore } from '../crypto/vaultCrypto';
 import { useI18n } from '../context/I18nContext';
@@ -70,20 +70,26 @@ const CreateVault = ({ onCreate, onBack, busy, error }) => {
 
         <div className="grid grid-cols-2 gap-2">
           {[
-            { id: 'family', label: t('create.family') },
-            { id: 'personal', label: t('create.personal') },
-          ].map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              onClick={() => setKind(option.id)}
-              className={`px-4 py-3 rounded-xl border ${
-                kind === option.id ? 'border-cyan-400/50 bg-cyan-400/10 text-white' : 'border-white/10 text-white/45'
-              }`}
-            >
-              {option.label}
-            </button>
-          ))}
+            { id: 'family', label: t('create.family'), hint: t('create.familyHint'), icon: Users, tint: 'from-cyan-400 to-blue-500' },
+            { id: 'personal', label: t('create.personal'), hint: t('create.personalHint'), icon: Shield, tint: 'from-violet-400 to-fuchsia-500' },
+          ].map((option) => {
+            const Icon = option.icon;
+            const active = kind === option.id;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => setKind(option.id)}
+                className={`rounded-2xl p-4 text-left border ${
+                  active ? `bg-gradient-to-br ${option.tint} text-white border-transparent` : 'border-white/10 text-white/60 bg-white/5'
+                }`}
+              >
+                <Icon size={18} />
+                <p className="font-medium mt-2">{option.label}</p>
+                <p className={`text-xs mt-0.5 ${active ? 'opacity-90' : 'text-white/40'}`}>{option.hint}</p>
+              </button>
+            );
+          })}
         </div>
 
         <label className="block">

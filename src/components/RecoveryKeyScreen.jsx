@@ -36,6 +36,14 @@ const RecoveryKeyScreen = ({ recoveryKey, onConfirm, onBack, title, body }) => {
         <p className="text-white/45 text-sm">
           {body || t('recovery.saveBody')}
         </p>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded-2xl p-3 bg-gradient-to-br from-amber-400/20 to-orange-500/10">
+            <p className="text-[11px] text-amber-100 leading-tight">{t('unlock.neverStored')}</p>
+          </div>
+          <div className="rounded-2xl p-3 bg-gradient-to-br from-rose-400/20 to-red-500/10">
+            <p className="text-[11px] text-rose-100 leading-tight">{t('unlock.local')}</p>
+          </div>
+        </div>
         <div className="bg-black/40 border border-white/20 rounded-xl p-4">
           <p className="text-white font-mono text-sm break-all tracking-wide">{recoveryKey}</p>
         </div>

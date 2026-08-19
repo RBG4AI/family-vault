@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, Upload, KeyRound, Shield, Trash2, AlertTriangle, Sparkles, Printer } from 'lucide-react';
+import { Clock, Download, KeyRound, Palette, Shield, Trash2, AlertTriangle, Sparkles, Printer, Upload } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import PWAInstaller from './PWAInstaller';
 import RecoveryKeyScreen from './RecoveryKeyScreen';
@@ -22,7 +22,7 @@ import BackButton from './BackButton';
 
 const Settings = ({ onBack }) => {
   const vault = useVaultContext();
-  const { t } = useI18n();
+  const { t, lang, languages } = useI18n();
   const [currentPassword, setCurrentPassword] = useState('');
   const [nextPassword, setNextPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -181,6 +181,31 @@ const Settings = ({ onBack }) => {
           <p className="text-xs tracking-[0.22em] uppercase text-cyan-300/70 mb-2">{t('settings.eyebrow')}</p>
           <h1 className="font-display text-3xl md:text-4xl text-white mb-2">{t('nav.settings')}</h1>
           <p className="text-white/45">{t('settings.intro')}</p>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="rounded-3xl p-4 bg-gradient-to-br from-cyan-400 to-blue-500 text-white">
+            <Shield size={16} className="opacity-90" />
+            <p className="font-display text-lg mt-2 truncate">{vault.meta?.name || t('nav.vault')}</p>
+            <p className="text-xs opacity-90 mt-0.5">{t('settings.rename')}</p>
+          </div>
+          <div className="rounded-3xl p-4 bg-gradient-to-br from-violet-400 to-fuchsia-500 text-white">
+            <Clock size={16} className="opacity-90" />
+            <p className="font-display text-lg mt-2">{t('settings.lockTile', { minutes: autoLockMinutes })}</p>
+            <p className="text-xs opacity-90 mt-0.5">{t('settings.autoLock')}</p>
+          </div>
+          <div className={`rounded-3xl p-4 text-white bg-gradient-to-br ${lastBackup && backupDays != null && backupDays <= 30 ? 'from-emerald-400 to-teal-500' : 'from-amber-400 to-orange-500'}`}>
+            <Download size={16} className="opacity-90" />
+            <p className="font-display text-lg mt-2">
+              {!lastBackup ? '—' : backupDays === 0 ? t('settings.today') : backupDays}
+            </p>
+            <p className="text-xs opacity-90 mt-0.5">{t('settings.backup')}</p>
+          </div>
+          <div className="rounded-3xl p-4 bg-gradient-to-br from-sky-400 to-indigo-500 text-white">
+            <Palette size={16} className="opacity-90" />
+            <p className="font-display text-lg mt-2">{languages[lang]?.name || lang}</p>
+            <p className="text-xs opacity-90 mt-0.5">{t('settings.language')}</p>
+          </div>
         </div>
 
         <StorageDisclaimer />

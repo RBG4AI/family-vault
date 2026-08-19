@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ShieldAlert } from 'lucide-react';
 import PasswordStrengthMeter from './PasswordStrengthMeter';
 import { passwordScore } from '../crypto/vaultCrypto';
 import { useI18n } from '../context/I18nContext';
@@ -42,6 +42,15 @@ const RecoveryUnlock = ({ vault, onReset, onBack, busy, error }) => {
         <div>
           <h1 className="font-display text-3xl text-white">{t('recovery.title', { name: vault?.name || t('nav.vault') })}</h1>
           <p className="text-white/45 text-sm mt-1">{t('recovery.body')}</p>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded-2xl p-3 bg-gradient-to-br from-amber-400/20 to-orange-500/10">
+            <ShieldAlert size={16} className="text-amber-200" />
+            <p className="text-[11px] text-amber-100 mt-2 leading-tight">{t('settings.newRecoveryBody')}</p>
+          </div>
+          <div className="rounded-2xl p-3 bg-gradient-to-br from-emerald-400/20 to-teal-500/10">
+            <p className="text-[11px] text-emerald-100 leading-tight">{t('unlock.neverStored')}</p>
+          </div>
         </div>
         <textarea
           value={key}

@@ -68,6 +68,7 @@ export const TRANSLATIONS = {
       importFailed: 'Could not import backup.',
       storageFailed: 'Could not read vaults from this device.',
       invalidBackup: 'Not a valid encrypted vault backup.',
+      vaultCount: '{count} vaults on this device',
     },
     create: {
       title: 'Create a vault',
@@ -84,6 +85,8 @@ export const TRANSLATIONS = {
       mismatch: 'Passwords do not match.',
       back: 'All vaults',
       failed: 'Could not create the vault on this device.',
+      familyHint: 'Shared household',
+      personalHint: 'Just you',
     },
     unlock: {
       password: 'Master password',
@@ -101,6 +104,9 @@ export const TRANSLATIONS = {
       vaultLocked: 'Vault is locked.',
       failed: 'Could not unlock this vault.',
       invalidKdf: 'This backup uses unsupported encryption settings.',
+      local: 'Local only',
+      neverStored: 'Password never stored',
+      recoveryReady: 'Recovery key works',
     },
     people: {
       encrypted: 'encrypted with the vault',
@@ -112,6 +118,8 @@ export const TRANSLATIONS = {
       callEmergency: 'Call emergency',
       callPhone: 'Call',
       yearsOld: '{age} yrs',
+      records: 'Records',
+      noBlood: 'No blood group',
     },
     vitals: {
       health: 'Health',
@@ -199,6 +207,20 @@ export const TRANSLATIONS = {
     assets: {
       dueSoon: 'Due in 30 days',
       noDate: 'No date',
+      with2fa: '2FA on',
+      no2fa: 'No 2FA',
+      backupCodes: 'Backup codes',
+      withNominee: 'With nominee',
+      withRecovery: 'Recovery set',
+      linkedPeople: 'Linked people',
+      banks: 'Banks',
+      credit: 'Credit',
+      debit: 'Debit',
+      gain: 'Gain',
+      loss: 'Loss',
+      sameValue: 'Unchanged',
+      dayOfMonth: 'Day {day}',
+      totalValue: 'Total value',
     },
     modal: {
       add: {
@@ -299,6 +321,7 @@ export const TRANSLATIONS = {
       testerTitle: 'Tester tools',
       testerHint: 'Sample household is hidden until this is on.',
       testerEnable: 'Show sample data tools',
+      lockTile: '{minutes} min',
       lastBackup: 'Last backup on this device: {days} days ago.',
       lastBackupToday: 'Last backup on this device: today.',
       today: 'today',
@@ -581,6 +604,7 @@ export const TRANSLATIONS = {
       importFailed: 'बैकअप आयात नहीं हो सका।',
       storageFailed: 'इस डिवाइस से वॉल्ट नहीं पढ़े जा सके।',
       invalidBackup: 'यह मान्य एन्क्रिप्टेड वॉल्ट बैकअप नहीं है।',
+      vaultCount: 'इस डिवाइस पर {count} वॉल्ट',
     },
     create: {
       title: 'वॉल्ट बनाएँ',
@@ -597,6 +621,8 @@ export const TRANSLATIONS = {
       mismatch: 'पासवर्ड मेल नहीं खाते।',
       back: 'सभी वॉल्ट',
       failed: 'इस डिवाइस पर वॉल्ट नहीं बन सका।',
+      familyHint: 'पूरा परिवार',
+      personalHint: 'केवल आप',
     },
     unlock: {
       password: 'मास्टर पासवर्ड',
@@ -614,6 +640,9 @@ export const TRANSLATIONS = {
       vaultLocked: 'वॉल्ट लॉक है।',
       failed: 'यह वॉल्ट अनलॉक नहीं हो सका।',
       invalidKdf: 'इस बैकअप की एन्क्रिप्शन सेटिंग्स समर्थित नहीं हैं।',
+      local: 'केवल यहाँ',
+      neverStored: 'पासवर्ड सेव नहीं',
+      recoveryReady: 'रिकवरी कुंजी काम करती है',
     },
     people: {
       encrypted: 'वॉल्ट के साथ एन्क्रिप्टेड',
@@ -625,6 +654,8 @@ export const TRANSLATIONS = {
       callEmergency: 'आपातकालीन कॉल',
       callPhone: 'कॉल',
       yearsOld: '{age} वर्ष',
+      records: 'रिकॉर्ड',
+      noBlood: 'रक्त समूह नहीं',
     },
     vitals: {
       health: 'स्वास्थ्य',
@@ -712,6 +743,20 @@ export const TRANSLATIONS = {
     assets: {
       dueSoon: '30 दिनों में देय',
       noDate: 'कोई तिथि नहीं',
+      with2fa: '2FA चालू',
+      no2fa: '2FA नहीं',
+      backupCodes: 'बैकअप कोड',
+      withNominee: 'नॉमिनी है',
+      withRecovery: 'रिकवरी सेट',
+      linkedPeople: 'लिंक सदस्य',
+      banks: 'बैंक',
+      credit: 'क्रेडिट',
+      debit: 'डेबिट',
+      gain: 'लाभ',
+      loss: 'हानि',
+      sameValue: 'कोई बदलाव नहीं',
+      dayOfMonth: 'दिन {day}',
+      totalValue: 'कुल मूल्य',
     },
     modal: {
       add: {
@@ -812,6 +857,7 @@ export const TRANSLATIONS = {
       testerTitle: 'टेस्टर टूल',
       testerHint: 'नमूना परिवार तब तक छिपा रहता है जब तक यह चालू न हो।',
       testerEnable: 'नमूना डेटा टूल दिखाएँ',
+      lockTile: '{minutes} मिनट',
       lastBackup: 'इस डिवाइस पर पिछला बैकअप: {days} दिन पहले।',
       lastBackupToday: 'इस डिवाइस पर पिछला बैकअप: आज।',
     },

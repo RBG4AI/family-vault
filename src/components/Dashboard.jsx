@@ -1,6 +1,23 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Key, CreditCard, Users, AlertTriangle, Download, Printer, Calendar } from 'lucide-react';
+import {
+  AlertTriangle,
+  Building2,
+  Calendar,
+  Car,
+  CreditCard,
+  Download,
+  FileText,
+  HeartPulse,
+  Home,
+  Key,
+  Mail,
+  Printer,
+  Shield,
+  StickyNote,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
 import { storage } from '../utils/storage';
 import { collectRenewals } from '../utils/renewals';
 import { backupIsStale, getLastBackupAt } from '../utils/devicePrefs';
@@ -8,11 +25,22 @@ import { downloadVaultBackup } from '../utils/exportBackup';
 import { downloadRenewalsIcs } from '../utils/ics';
 import { useI18n } from '../context/I18nContext';
 import { useVaultContext } from '../context/VaultContext';
+import { optionLabel } from '../utils/telLink';
 import StorageDisclaimer from './StorageDisclaimer';
 import EmergencyPrint from './EmergencyPrint';
 import AccessPrint from './AccessPrint';
 import InvestmentOverview from './InvestmentOverview';
 import { printSection } from '../utils/printSection';
+
+const REL_TINT = {
+  Self: 'from-cyan-400 to-blue-500',
+  Spouse: 'from-rose-400 to-fuchsia-500',
+  Parent: 'from-amber-400 to-orange-500',
+  Child: 'from-emerald-400 to-teal-500',
+  Sibling: 'from-violet-400 to-indigo-500',
+  Grandparent: 'from-lime-400 to-emerald-600',
+  Other: 'from-slate-400 to-slate-600',
+};
 
 const Dashboard = ({ onNavigate }) => {
   const { t } = useI18n();
@@ -20,8 +48,16 @@ const Dashboard = ({ onNavigate }) => {
   const data = storage.get() || {};
   const people = data.people || [];
   const credentials = data.credentials || [];
+  const emails = data.emails || [];
   const banking = data.banking || [];
+  const cards = data.cards || [];
+  const government = data.government || [];
+  const insurance = data.insurance || [];
   const investments = data.investments || [];
+  const vehicles = data.vehicles || [];
+  const properties = data.properties || [];
+  const vitals = data.vitals || [];
+  const notes = data.notes || [];
   const renewals = collectRenewals(data, people).filter((item) => item.days <= 60);
   const [backupError, setBackupError] = useState('');
   const [, setBackupTick] = useState(0);
@@ -31,7 +67,16 @@ const Dashboard = ({ onNavigate }) => {
   const stats = [
     { title: t('nav.people'), value: people.length, icon: Users, tint: 'from-cyan-400 to-blue-500', section: 'people' },
     { title: t('nav.credentials'), value: credentials.length, icon: Key, tint: 'from-violet-400 to-fuchsia-500', section: 'credentials' },
+    { title: t('nav.emails'), value: emails.length, icon: Mail, tint: 'from-sky-400 to-indigo-500', section: 'emails' },
     { title: t('nav.banking'), value: banking.length, icon: CreditCard, tint: 'from-emerald-400 to-teal-500', section: 'banking' },
+    { title: t('nav.cards'), value: cards.length, icon: CreditCard, tint: 'from-amber-400 to-rose-500', section: 'cards' },
+    { title: t('nav.government'), value: government.length, icon: FileText, tint: 'from-orange-400 to-amber-500', section: 'government' },
+    { title: t('nav.insurance'), value: insurance.length, icon: Shield, tint: 'from-rose-400 to-red-500', section: 'insurance' },
+    { title: t('nav.investments'), value: investments.length, icon: TrendingUp, tint: 'from-lime-400 to-emerald-600', section: 'investments' },
+    { title: t('nav.vehicles'), value: vehicles.length, icon: Car, tint: 'from-sky-400 to-indigo-500', section: 'vehicles' },
+    { title: t('nav.properties'), value: properties.length, icon: Home, tint: 'from-amber-400 to-orange-500', section: 'properties' },
+    { title: t('nav.vitals'), value: vitals.length, icon: HeartPulse, tint: 'from-pink-400 to-rose-500', section: 'vitals' },
+    { title: t('nav.notes'), value: notes.length, icon: StickyNote, tint: 'from-yellow-400 to-amber-500', section: 'notes' },
     { title: t('dash.attention'), value: renewals.length, icon: AlertTriangle, tint: 'from-amber-400 to-orange-500' },
   ];
 
@@ -55,7 +100,7 @@ const Dashboard = ({ onNavigate }) => {
       </div>
 
       {staleBackup && (
-        <div className="glass-panel rounded-3xl p-5 border border-amber-400/25 space-y-3">
+        <div className="rounded-3xl p-5 bg-gradient-to-br from-amber-400/20 to-orange-500/10 border border-amber-400/25 space-y-3">
           <p className="text-white font-medium">{t('dash.backupTitle')}</p>
           <p className="text-white/50 text-sm">
             {lastBackup ? t('dash.backupStale') : t('dash.backupNever')}
@@ -78,7 +123,7 @@ const Dashboard = ({ onNavigate }) => {
         </div>
       )}
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
@@ -87,15 +132,13 @@ const Dashboard = ({ onNavigate }) => {
               key={stat.title}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.06 }}
+              transition={{ delay: index * 0.03 }}
               onClick={() => stat.section && onNavigate(stat.section)}
-              className="glass-panel rounded-3xl p-4 md:p-5 text-left"
+              className={`rounded-3xl p-4 text-left bg-gradient-to-br ${stat.tint} text-white`}
             >
-              <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${stat.tint} flex items-center justify-center mb-4`}>
-                <Icon className="w-5 h-5 text-white" />
-              </div>
-              <p className="font-display text-2xl text-white">{stat.value}</p>
-              <p className="text-white/40 text-xs mt-1">{stat.title}</p>
+              <Icon className="w-5 h-5 opacity-90" />
+              <p className="font-display text-2xl mt-3">{stat.value}</p>
+              <p className="text-xs opacity-90 mt-1">{stat.title}</p>
             </motion.button>
           );
         })}
@@ -112,13 +155,15 @@ const Dashboard = ({ onNavigate }) => {
                 type="button"
                 key={item.id}
                 onClick={() => onNavigate(item.section, item.itemId)}
-                className="w-full flex items-center justify-between bg-white/5 rounded-2xl px-4 py-3 text-left hover:bg-white/10"
+                className={`w-full flex items-center justify-between rounded-2xl px-4 py-3 text-left ${
+                  item.days < 0 ? 'bg-rose-400/15' : item.days <= 14 ? 'bg-amber-400/15' : 'bg-cyan-400/10'
+                }`}
               >
                 <div>
                   <p className="text-white text-sm">{item.title}</p>
                   <p className="text-white/40 text-xs">{item.subtitle} · {item.category}</p>
                 </div>
-                <span className={`text-xs font-medium ${item.days < 0 ? 'text-rose-300' : item.days <= 14 ? 'text-amber-300' : 'text-cyan-300'}`}>
+                <span className={`text-xs font-medium ${item.days < 0 ? 'text-rose-200' : item.days <= 14 ? 'text-amber-200' : 'text-cyan-200'}`}>
                   {item.days < 0 ? t('dash.overdue', { days: Math.abs(item.days) }) : t('dash.daysLeft', { days: item.days })}
                 </span>
               </button>
@@ -128,33 +173,39 @@ const Dashboard = ({ onNavigate }) => {
       </div>
 
       {people.length > 0 && (
-        <div className="glass-panel rounded-3xl p-5 md:p-6">
-          <h2 className="text-white font-medium mb-4">{t('dash.family')}</h2>
-          <div className="flex flex-wrap gap-3">
-            {people.map((person) => (
-              <button
-                type="button"
-                key={person.id}
-                onClick={() => onNavigate('people', person.id)}
-                className="px-4 py-3 rounded-2xl bg-white/5 text-sm text-white/80 hover:bg-white/10"
-              >
-                {person.name}
-                <span className="text-white/35 ml-2">{person.relation || ''}</span>
-              </button>
-            ))}
+        <div>
+          <h2 className="text-white font-medium mb-3">{t('dash.family')}</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {people.map((person) => {
+              const tint = REL_TINT[person.relation] || REL_TINT.Other;
+              return (
+                <button
+                  type="button"
+                  key={person.id}
+                  onClick={() => onNavigate('people', person.id)}
+                  className={`rounded-3xl p-4 text-left bg-gradient-to-br ${tint} text-white`}
+                >
+                  <p className="font-semibold truncate">{person.name}</p>
+                  <p className="text-xs opacity-90 mt-1">{person.relation ? optionLabel(t, person.relation) : t('people.familyMember')}</p>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
 
-      <div className="flex flex-wrap gap-3">
-        <button type="button" onClick={() => printSection('emergency')} className="px-4 py-2 bg-white/10 text-white rounded-xl flex items-center gap-2">
-          <Printer size={16} /> {t('sheet.print')}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <button type="button" onClick={() => printSection('emergency')} className="rounded-3xl p-4 bg-gradient-to-br from-rose-400/20 to-orange-500/10 text-white text-left">
+          <Printer size={16} className="opacity-80" />
+          <p className="mt-3 font-medium">{t('sheet.print')}</p>
         </button>
-        <button type="button" onClick={() => printSection('access')} className="px-4 py-2 bg-white/10 text-white rounded-xl flex items-center gap-2">
-          <Printer size={16} /> {t('access.print')}
+        <button type="button" onClick={() => printSection('access')} className="rounded-3xl p-4 bg-gradient-to-br from-violet-400/20 to-fuchsia-500/10 text-white text-left">
+          <Building2 size={16} className="opacity-80" />
+          <p className="mt-3 font-medium">{t('access.print')}</p>
         </button>
-        <button type="button" onClick={() => downloadRenewalsIcs(collectRenewals(data, people))} className="px-4 py-2 bg-white/10 text-white rounded-xl flex items-center gap-2">
-          <Calendar size={16} /> {t('sheet.calendar')}
+        <button type="button" onClick={() => downloadRenewalsIcs(collectRenewals(data, people))} className="rounded-3xl p-4 bg-gradient-to-br from-cyan-400/20 to-blue-500/10 text-white text-left">
+          <Calendar size={16} className="opacity-80" />
+          <p className="mt-3 font-medium">{t('sheet.calendar')}</p>
         </button>
       </div>
 
