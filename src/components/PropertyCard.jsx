@@ -5,6 +5,7 @@ import { useI18n } from '../context/I18nContext';
 import { useToast } from '../context/ToastContext';
 import { optionLabel } from '../utils/telLink';
 import { daysUntil, dueTone, formatDisplayDate } from '../utils/dates';
+import { mapsHref, mapsLabel } from '../utils/maps';
 
 const THEME = {
   Home: { icon: Home, bar: 'from-amber-400 to-rose-500' },
@@ -33,6 +34,8 @@ const PropertyCard = ({ item, onEdit, onDelete, highlighted }) => {
   const Icon = theme.icon;
   const taxDays = daysUntil(item.taxDueDate);
   const taxTone = dueTone(taxDays);
+  const mapsLink = mapsHref(item.mapsLocation, item.address);
+  const mapsText = mapsLabel(item.mapsLocation, item.address) || item.address;
 
   useEffect(() => {
     if (!confirmDelete) return undefined;
@@ -70,6 +73,17 @@ const PropertyCard = ({ item, onEdit, onDelete, highlighted }) => {
             <button type="button" onClick={() => onEdit(item)} className="p-2 text-white/40 hover:text-cyan-300" aria-label={t('common.edit')}>
               <Edit size={16} />
             </button>
+            {mapsLink ? (
+              <a
+                href={mapsLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 text-white/40 hover:text-emerald-300"
+                aria-label={t('assets.openMaps')}
+              >
+                <MapPin size={16} />
+              </a>
+            ) : null}
             {confirmDelete ? (
               <button type="button" onClick={() => onDelete(item.id)} className="px-2 text-xs text-rose-300">{t('people.confirmDelete')}</button>
             ) : (
@@ -84,6 +98,23 @@ const PropertyCard = ({ item, onEdit, onDelete, highlighted }) => {
           <p className="text-[11px] text-white/40">{t('field.address')}</p>
           <p className="text-white text-sm leading-6">{item.address || '—'}</p>
         </div>
+
+        {mapsLink ? (
+          <a
+            href={mapsLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 rounded-2xl px-3 py-3 bg-gradient-to-br from-emerald-400/20 to-cyan-500/10 hover:from-emerald-400/30 hover:to-cyan-500/20 border border-emerald-300/15"
+          >
+            <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shrink-0">
+              <MapPin className="text-white" size={18} />
+            </span>
+            <span className="min-w-0">
+              <p className="text-emerald-50 text-sm font-medium">{t('assets.openMaps')}</p>
+              <p className="text-white/45 text-xs truncate mt-0.5">{mapsText || t('field.mapsLocation')}</p>
+            </span>
+          </a>
+        ) : null}
 
         <div className="grid grid-cols-2 gap-2">
           <button type="button" onClick={() => copy(item.surveyNumber, 'survey')} className="text-left rounded-2xl bg-white/5 hover:bg-white/10 px-3 py-2.5">

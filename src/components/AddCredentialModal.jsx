@@ -148,6 +148,7 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
           { key: 'name', label: 'Property name', type: 'text', required: true },
           { key: 'propertyType', label: 'Type', type: 'select', options: ['Home', 'Plot', 'Apartment', 'Shop', 'Other'] },
           { key: 'address', label: 'Address', type: 'textarea', required: true },
+          { key: 'mapsLocation', label: 'Google Maps location', type: 'text', hint: 'field.mapsLocationHint' },
           { key: 'surveyNumber', label: 'Survey / registration number', type: 'text' },
           { key: 'taxDueDate', label: 'Tax due date', type: 'date' },
           { key: 'notes', label: 'Notes', type: 'textarea' },
@@ -328,7 +329,7 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
                           required={field.required}
                           autoComplete="off"
                           className="field"
-                          placeholder={label}
+                          placeholder={field.key === 'mapsLocation' ? t('field.mapsLocationPlaceholder') : label}
                         />
                       )}
                       {field.type === 'password' && <PasswordStrengthMeter password={formData[field.key] || ''} />}
@@ -339,6 +340,7 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
                       )}
                     </div>
                   )}
+                  {field.hint ? <p className="text-white/40 text-xs mt-1.5">{t(field.hint)}</p> : null}
                 </div>
                 );
               })}

@@ -221,6 +221,7 @@ export const TRANSLATIONS = {
       sameValue: 'Unchanged',
       dayOfMonth: 'Day {day}',
       totalValue: 'Total value',
+      openMaps: 'Open in Google Maps',
     },
     modal: {
       add: {
@@ -471,6 +472,9 @@ export const TRANSLATIONS = {
       rcExpiry: 'RC expiry',
       propertyType: 'Property type',
       address: 'Address',
+      mapsLocation: 'Google Maps location',
+      mapsLocationHint: 'Paste a Google Maps link, plus code, or coordinates. The address is used if this is empty.',
+      mapsLocationPlaceholder: 'https://maps.app.goo.gl/…',
       surveyNumber: 'Survey / registration number',
       taxDueDate: 'Tax due date',
       date: 'Date',
@@ -757,6 +761,7 @@ export const TRANSLATIONS = {
       sameValue: 'कोई बदलाव नहीं',
       dayOfMonth: 'दिन {day}',
       totalValue: 'कुल मूल्य',
+      openMaps: 'Google Maps में खोलें',
     },
     modal: {
       add: {
@@ -1006,6 +1011,9 @@ export const TRANSLATIONS = {
       rcExpiry: 'RC समाप्ति',
       propertyType: 'संपत्ति प्रकार',
       address: 'पता',
+      mapsLocation: 'Google Maps स्थान',
+      mapsLocationHint: 'Google Maps लिंक, प्लस कोड या निर्देशांक चिपकाएँ। खाली हो तो पता इस्तेमाल होगा।',
+      mapsLocationPlaceholder: 'https://maps.app.goo.gl/…',
       surveyNumber: 'सर्वे / रजिस्ट्रेशन संख्या',
       taxDueDate: 'कर देय तिथि',
       date: 'तिथि',
