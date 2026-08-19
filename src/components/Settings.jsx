@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Download, Upload, KeyRound, Shield, Trash2, AlertTriangle, Sparkles } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
@@ -36,8 +36,14 @@ const Settings = () => {
   const [sampleOk, setSampleOk] = useState(false);
   const [testerTools, setTesterToolsState] = useState(() => isTesterTools());
   const [backupStamp, setBackupStamp] = useState(() => getLastBackupAt(vault.meta?.id));
+  const [vaultName, setVaultName] = useState(() => vault.meta?.name || '');
+  const [renameMessage, setRenameMessage] = useState('');
   const lastBackup = backupStamp;
   const backupDays = backupStamp ? backupAgeDays(vault.meta?.id) : null;
+
+  useEffect(() => {
+    setVaultName(vault.meta?.name || '');
+  }, [vault.meta?.name]);
 
   const setAutoLock = (minutes) => {
     const value = Number(minutes);
@@ -48,6 +54,17 @@ const Settings = () => {
     });
     setLockSaved(true);
     window.setTimeout(() => setLockSaved(false), 2000);
+  };
+
+  const handleRename = async (event) => {
+    event.preventDefault();
+    setRenameMessage('');
+    try {
+      await vault.renameVault(vaultName);
+      setRenameMessage(t('settings.renamed'));
+    } catch (error) {
+      setRenameMessage(vaultErrorText(error, t));
+    }
   };
 
   const handleChangePassword = async (event) => {
@@ -162,6 +179,21 @@ const Settings = () => {
         <StorageDisclaimer />
 
         <section className="glass-panel rounded-3xl p-6 space-y-3">
+          <h2 className="text-white font-semibold">{t('settings.rename')}</h2>
+          <p className="text-white/45 text-sm">{t('settings.renameHint')}</p>
+          <form onSubmit={handleRename} className="flex flex-col sm:flex-row gap-3">
+            <input
+              value={vaultName}
+              onChange={(e) => setVaultName(e.target.value)}
+              className="field"
+              placeholder={t('create.name')}
+            />
+            <button type="submit" className="btn-primary shrink-0">{t('settings.renameAction')}</button>
+          </form>
+          {renameMessage && <p className="text-sm text-amber-300">{renameMessage}</p>}
+        </section>
+
+        <section className="glass-panel rounded-3xl p-6 space-y-3">
           <h2 className="text-white font-semibold">{t('settings.testerTitle')}</h2>
           <p className="text-white/45 text-sm">{t('settings.testerHint')}</p>
           <label className="flex items-center gap-3 text-white/80 text-sm">
@@ -251,6 +283,7 @@ const Settings = () => {
         <section className="glass-panel rounded-3xl p-6 space-y-4">
           <h2 className="text-white font-semibold">{t('settings.backup')}</h2>
           <p className="text-white/45 text-sm">{t('settings.backupHint')}</p>
+          <p className="text-white/45 text-sm">{t('settings.restoreHint')}</p>
           <p className="text-white/60 text-sm">
             {lastBackup
               ? backupDays === 0
@@ -263,7 +296,7 @@ const Settings = () => {
               <Download size={16} /> {t('settings.export')}
             </button>
             <label className="flex items-center gap-2 px-4 py-2 bg-white/10 text-white rounded-xl cursor-pointer">
-              <Upload size={16} /> {t('settings.import')}
+              <Upload size={16} /> {t('settings.restore')}
               <input type="file" accept="application/json,.json" className="sr-only" onChange={handleImport} />
             </label>
           </div>

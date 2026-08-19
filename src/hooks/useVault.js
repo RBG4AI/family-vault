@@ -12,6 +12,7 @@ import {
   unlockVault,
   unlockWithRecovery,
   updateMasterPassword,
+  renameActiveVault,
   wipeDevice,
 } from '../storage/session';
 import { useI18n } from '../context/I18nContext';
@@ -166,6 +167,11 @@ export const useVault = () => {
       handleRecoveryReset,
       lock,
       refreshVaults,
+      renameVault: async (name) => {
+        const meta = await renameActiveVault(name);
+        await refreshVaults();
+        return meta;
+      },
       updateMasterPassword: async (currentPassword, nextPassword) => {
         const recovery = await updateMasterPassword(currentPassword, nextPassword);
         if (recovery) {

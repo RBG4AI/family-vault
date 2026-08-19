@@ -66,7 +66,7 @@ const fieldsFor = (item) =>
     ['content', item.content || item.notes],
   ].filter(([, value]) => value !== undefined && value !== null && value !== '').slice(0, 8);
 
-const CredentialCard = ({ credential, onEdit, onDelete }) => {
+const CredentialCard = ({ credential, onEdit, onDelete, highlighted }) => {
   const [revealed, setRevealed] = useState({});
   const [copied, setCopied] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -103,7 +103,7 @@ const CredentialCard = ({ credential, onEdit, onDelete }) => {
     <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="glass-panel rounded-2xl md:rounded-3xl p-4 md:p-6 hover:border-white/15 transition-all duration-300"
+      className={`glass-panel rounded-2xl md:rounded-3xl p-4 md:p-6 hover:border-white/15 transition-all duration-300 ${highlighted ? 'ring-2 ring-cyan-400/70' : ''}`}
     >
       <div className="flex items-start justify-between mb-4">
         <div className="min-w-0 pr-3">

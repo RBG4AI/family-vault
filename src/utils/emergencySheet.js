@@ -14,6 +14,7 @@ export const buildEmergencySheet = (data = {}) => {
     phone: person.phone || '',
     emergencyPhone: person.emergencyPhone || '',
     bloodGroup: person.bloodGroup || '',
+    allergies: person.allergies || '',
     doctorName: person.doctorName || '',
     lockerHint: person.lockerHint || '',
   }));

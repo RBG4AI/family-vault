@@ -1,17 +1,20 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Plus, HeartPulse, Pencil, Trash2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { storage } from '../utils/storage';
 import AddCredentialModal from './AddCredentialModal';
 import { useI18n } from '../context/I18nContext';
+import { useToast } from '../context/ToastContext';
 
-const VitalsSection = () => {
+const VitalsSection = ({ focusId, onFocusHandled }) => {
   const { t } = useI18n();
+  const { toast } = useToast();
   const people = storage.get('people') || [];
   const [vitals, setVitals] = useState(() => storage.get('vitals') || []);
   const [personId, setPersonId] = useState(people[0]?.id || '');
   const [open, setOpen] = useState(false);
   const [editData, setEditData] = useState(null);
+  const [highlightId, setHighlightId] = useState(null);
 
   const rows = useMemo(
     () => vitals.filter((item) => !personId || item.personId === personId).sort((a, b) => String(b.date).localeCompare(String(a.date))),
@@ -34,11 +37,37 @@ const VitalsSection = () => {
     setEditData(null);
   };
 
-  const remove = (id) => {
-    const next = vitals.filter((item) => item.id !== id);
+  const remove = (item) => {
+    const next = vitals.filter((row) => row.id !== item.id);
     setVitals(next);
     storage.set('vitals', next);
+    toast(t('common.deleted'), {
+      undoLabel: t('common.undo'),
+      undo: () => {
+        const current = storage.get('vitals') || [];
+        if (current.some((row) => row.id === item.id)) return;
+        const restored = [...current, item];
+        storage.set('vitals', restored);
+        setVitals(restored);
+      },
+    });
   };
+
+  useEffect(() => {
+    if (!focusId) return undefined;
+    const match = vitals.find((item) => item.id === focusId);
+    if (match?.personId) setPersonId(match.personId);
+    setHighlightId(focusId);
+    const scrollTimer = window.setTimeout(() => {
+      document.getElementById(`record-${focusId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      onFocusHandled?.();
+    }, 160);
+    const clearTimer = window.setTimeout(() => setHighlightId(null), 3200);
+    return () => {
+      window.clearTimeout(scrollTimer);
+      window.clearTimeout(clearTimer);
+    };
+  }, [focusId, onFocusHandled]);
 
   return (
     <div className="p-4 md:p-8 mt-16 space-y-6">
@@ -93,7 +122,11 @@ const VitalsSection = () => {
           </div>
         )}
         {rows.map((item) => (
-          <div key={item.id} className="glass-panel rounded-2xl px-4 py-3 flex justify-between items-center gap-3 text-sm">
+          <div
+            key={item.id}
+            id={`record-${item.id}`}
+            className={`glass-panel rounded-2xl px-4 py-3 flex justify-between items-center gap-3 text-sm ${highlightId === item.id ? 'ring-2 ring-cyan-400/70' : ''}`}
+          >
             <span className="text-white/70">{item.date}</span>
             <span className="text-white flex-1">
               {item.systolic && item.diastolic ? `${item.systolic}/${item.diastolic}` : '—'} BP
@@ -112,9 +145,7 @@ const VitalsSection = () => {
               <button
                 type="button"
                 aria-label={t('common.delete')}
-                onClick={() => {
-                  if (window.confirm(t('vitals.confirmDelete'))) remove(item.id);
-                }}
+                onClick={() => remove(item)}
                 className="p-2 text-white/40 hover:text-rose-300"
               >
                 <Trash2 size={14} />

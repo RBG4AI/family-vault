@@ -36,7 +36,8 @@ const EmergencyPrint = ({ data }) => {
             <li key={person.name}>
               <strong>{person.name}</strong>
               {person.relation ? ` · ${person.relation}` : ''}
-              {person.bloodGroup ? ` · ${t('field.bloodGroup')} ${person.bloodGroup}` : ''}
+              {person.bloodGroup ? ` · ${t('field.bloodGroup')} ${person.bloodGroup === 'Unknown' ? t('option.Unknown') : person.bloodGroup}` : ''}
+              {person.allergies ? ` · ${t('field.allergies')} ${person.allergies}` : ''}
               {person.emergencyPhone ? ` · ${t('field.emergencyPhone')} ${person.emergencyPhone}` : ''}
               {person.phone ? ` · ${t('field.phone')} ${person.phone}` : ''}
               {person.doctorName ? ` · ${t('field.doctorName')} ${person.doctorName}` : ''}

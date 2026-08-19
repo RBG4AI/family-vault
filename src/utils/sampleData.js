@@ -69,6 +69,10 @@ const buildSample = () => {
       phone: '9876543210',
       email: 'asha.sample@example.com',
       notes: 'Demo record. Not a real person.',
+      bloodGroup: 'O+',
+      emergencyPhone: '9876543210',
+      allergies: 'Peanuts (demo)',
+      doctorName: 'Dr. Sample',
     }),
     stamp('person-rohan', {
       name: 'Rohan Sharma',
@@ -83,6 +87,8 @@ const buildSample = () => {
       birthday: birthdayOn(-12, 1961),
       phone: '9876543212',
       email: 'meera.sample@example.com',
+      bloodGroup: 'Unknown',
+      emergencyPhone: '9876543212',
     }),
     stamp('person-kabir', {
       name: 'Kabir Sharma',

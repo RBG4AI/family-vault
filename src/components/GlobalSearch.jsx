@@ -57,7 +57,7 @@ const GlobalSearch = ({ onNavigate, hidden }) => {
                   key={hit.id}
                   type="button"
                   onClick={() => {
-                    onNavigate(hit.section);
+                    onNavigate(hit.section, hit.itemId);
                     setOpen(false);
                     setQuery('');
                   }}

@@ -249,6 +249,26 @@ export const updateVaultData = (updater) => {
   persistCurrent();
 };
 
+export const renameActiveVault = async (name) => {
+  assertUnlocked();
+  const trimmed = String(name || '').trim();
+  if (!trimmed) {
+    throw taggedError('need_name', 'Give this vault a name.');
+  }
+  const existing = await listVaultRecords();
+  if (existing.some((item) => item.id !== activeMeta.id && item.name === trimmed)) {
+    throw taggedError('name_taken', 'A vault with this name already exists on this device.');
+  }
+  return enqueue(async () => {
+    assertUnlocked();
+    activeMeta = { ...activeMeta, name: trimmed, updatedAt: new Date().toISOString() };
+    await saveVaultRecord({ ...activeMeta, envelope });
+    persistError = null;
+    notify();
+    return activeMeta;
+  });
+};
+
 export const updateMasterPassword = async (currentPassword, nextPassword) => {
   assertUnlocked();
   return enqueue(async () => {

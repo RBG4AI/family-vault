@@ -21,6 +21,10 @@ export const vaultErrorText = (err, t) => {
       return t('unlock.invalidKdf');
     case 'name_mismatch':
       return t('settings.nameMismatch');
+    case 'need_name':
+      return t('create.needName');
+    case 'name_taken':
+      return t('settings.nameTaken');
     case 'locked_vault':
       return t('unlock.vaultLocked');
     case 'save_failed':

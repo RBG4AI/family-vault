@@ -6,6 +6,7 @@ import CredentialCard from './CredentialCard';
 import AddCredentialModal from './AddCredentialModal';
 import SmartSearch from './SmartSearch';
 import { useI18n } from '../context/I18nContext';
+import { useToast } from '../context/ToastContext';
 
 const FORM_TYPE = {
   credentials: 'app',
@@ -67,14 +68,16 @@ const inAmountRange = (amount, range) => {
 
 const AMOUNT_TYPES = new Set(['investments', 'insurance', 'cards']);
 
-const CredentialsSection = ({ type, title, onNavigate }) => {
+const CredentialsSection = ({ type, title, onNavigate, focusId, onFocusHandled }) => {
   const { t } = useI18n();
+  const { toast } = useToast();
   const [items, setItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState('All');
   const [advanced, setAdvanced] = useState({ dateRange: '', amountRange: '' });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
+  const [highlightId, setHighlightId] = useState(null);
 
   const loadItems = useCallback(() => {
     setItems(storage.get(type) || []);
@@ -94,6 +97,23 @@ const CredentialsSection = ({ type, title, onNavigate }) => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [loadItems]);
+
+  useEffect(() => {
+    if (!focusId) return undefined;
+    setSearchTerm('');
+    setSelectedTag('All');
+    setAdvanced({ dateRange: '', amountRange: '' });
+    setHighlightId(focusId);
+    const scrollTimer = window.setTimeout(() => {
+      document.getElementById(`record-${focusId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      onFocusHandled?.();
+    }, 160);
+    const clearTimer = window.setTimeout(() => setHighlightId(null), 3200);
+    return () => {
+      window.clearTimeout(scrollTimer);
+      window.clearTimeout(clearTimer);
+    };
+  }, [focusId, onFocusHandled]);
 
   const filteredItems = useMemo(() => {
     let filtered = items;
@@ -129,9 +149,21 @@ const CredentialsSection = ({ type, title, onNavigate }) => {
   };
 
   const handleDelete = (id) => {
+    const removed = items.find((item) => item.id === id);
     const updatedItems = items.filter((item) => item.id !== id);
     setItems(updatedItems);
     storage.set(type, updatedItems);
+    if (!removed) return;
+    toast(t('common.deleted'), {
+      undoLabel: t('common.undo'),
+      undo: () => {
+        const current = storage.get(type) || [];
+        if (current.some((item) => item.id === removed.id)) return;
+        const next = [...current, removed];
+        storage.set(type, next);
+        setItems(next);
+      },
+    });
   };
 
   const getAllTags = () => {
@@ -207,11 +239,12 @@ const CredentialsSection = ({ type, title, onNavigate }) => {
           {filteredItems.map((item, index) => (
             <motion.div
               key={item.id}
+              id={`record-${item.id}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: Math.min(index, 6) * 0.03 }}
             >
-              <CredentialCard credential={item} onEdit={handleEdit} onDelete={handleDelete} />
+              <CredentialCard credential={item} onEdit={handleEdit} onDelete={handleDelete} highlighted={highlightId === item.id} />
             </motion.div>
           ))}
         </div>

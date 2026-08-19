@@ -115,7 +115,7 @@ const Dashboard = ({ onNavigate }) => {
               <button
                 type="button"
                 key={item.id}
-                onClick={() => onNavigate(item.section)}
+                onClick={() => onNavigate(item.section, item.itemId)}
                 className="w-full flex items-center justify-between bg-white/5 rounded-2xl px-4 py-3 text-left hover:bg-white/10"
               >
                 <div>
@@ -139,7 +139,7 @@ const Dashboard = ({ onNavigate }) => {
               <button
                 type="button"
                 key={person.id}
-                onClick={() => onNavigate('people')}
+                onClick={() => onNavigate('people', person.id)}
                 className="px-4 py-3 rounded-2xl bg-white/5 text-sm text-white/80 hover:bg-white/10"
               >
                 {person.name}

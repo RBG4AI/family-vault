@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Users, X } from 'lucide-react';
+import { ChevronRight, Phone, Plus, Users, X } from 'lucide-react';
 import { storage } from '../utils/storage';
 import AddCredentialModal from './AddCredentialModal';
 import { useI18n } from '../context/I18nContext';
+import { useToast } from '../context/ToastContext';
+import { ageFromBirthday, optionLabel, telHref } from '../utils/telLink';
 
 const initials = (name = '') =>
   name
@@ -27,15 +29,31 @@ const linkedTitle = (item) =>
   item.policyNumber ||
   item.insuranceType ||
   item.username ||
+  item.date ||
   '';
 
 const linkedFor = (personId) =>
   PERSON_BUCKETS.flatMap((key) => (storage.get(key) || []).filter((item) => item.personId === personId).map((item) => ({ ...item, _kind: key })));
 
 const unlinkPerson = (personId) => {
+  const snapshot = PERSON_BUCKETS.map((key) => ({
+    key,
+    ids: (storage.get(key) || []).filter((item) => item.personId === personId).map((item) => item.id),
+  }));
   PERSON_BUCKETS.forEach((key) => {
     const items = storage.get(key) || [];
     storage.set(key, items.map((item) => (item.personId === personId ? { ...item, personId: '' } : item)));
+  });
+  return snapshot;
+};
+
+const relinkPerson = (personId, snapshot) => {
+  snapshot.forEach(({ key, ids }) => {
+    const items = storage.get(key) || [];
+    storage.set(
+      key,
+      items.map((item) => (ids.includes(item.id) ? { ...item, personId } : item))
+    );
   });
 };
 
@@ -46,8 +64,9 @@ const QUICK_ADD = [
   { form: 'note', bucket: 'notes', nav: 'notes' },
 ];
 
-const PeopleSection = () => {
+const PeopleSection = ({ onNavigate, focusId, onFocusHandled }) => {
   const { t } = useI18n();
+  const { toast } = useToast();
   const [people, setPeople] = useState(() => storage.get('people') || []);
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState(null);
@@ -82,6 +101,30 @@ const PeopleSection = () => {
     setConfirmDelete(false);
   };
 
+  const removePerson = (person) => {
+    const snapshot = unlinkPerson(person.id);
+    const next = people.filter((item) => item.id !== person.id);
+    setPeople(next);
+    storage.set('people', next);
+    closePerson();
+    toast(t('common.deleted'), {
+      undoLabel: t('common.undo'),
+      undo: () => {
+        const restored = [...(storage.get('people') || []), person];
+        storage.set('people', restored);
+        setPeople(restored);
+        relinkPerson(person.id, snapshot);
+      },
+    });
+  };
+
+  useEffect(() => {
+    if (!focusId) return undefined;
+    setSelected(focusId);
+    onFocusHandled?.();
+    return undefined;
+  }, [focusId, onFocusHandled]);
+
   useEffect(() => {
     if (!selected) return undefined;
     const onKey = (event) => {
@@ -90,6 +133,10 @@ const PeopleSection = () => {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [selected]);
+
+  const emergencyHref = selectedPerson ? telHref(selectedPerson.emergencyPhone) : '';
+  const phoneHref = selectedPerson ? telHref(selectedPerson.phone) : '';
+  const age = selectedPerson ? ageFromBirthday(selectedPerson.birthday) : null;
 
   return (
     <div className="p-4 md:p-8 mt-16">
@@ -126,7 +173,14 @@ const PeopleSection = () => {
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-white font-semibold truncate">{person.name}</h3>
-                  <p className="text-white/45 text-sm truncate">{[person.relation ? t(`option.${person.relation}`) : '', person.birthday].filter(Boolean).join(' · ')}</p>
+                  <p className="text-white/45 text-sm truncate">
+                    {[
+                      person.relation ? t(`option.${person.relation}`) : '',
+                      ageFromBirthday(person.birthday) != null
+                        ? t('people.yearsOld', { age: ageFromBirthday(person.birthday) })
+                        : person.birthday || '',
+                    ].filter(Boolean).join(' · ')}
+                  </p>
                 </div>
               </div>
             </motion.button>
@@ -142,15 +196,12 @@ const PeopleSection = () => {
               <div className="min-w-0">
                 <h2 className="text-2xl font-display text-white">{selectedPerson.name}</h2>
                 {selectedPerson.relation ? <p className="text-white/50 text-sm">{t(`option.${selectedPerson.relation}`)}</p> : null}
-                {(selectedPerson.bloodGroup || selectedPerson.emergencyPhone || selectedPerson.doctorName) && (
-                  <p className="text-white/40 text-sm mt-2">
-                    {[
-                      selectedPerson.bloodGroup && `${t('field.bloodGroup')} ${selectedPerson.bloodGroup}`,
-                      selectedPerson.emergencyPhone && `${t('field.emergencyPhone')} ${selectedPerson.emergencyPhone}`,
-                      selectedPerson.doctorName && `${t('field.doctorName')} ${selectedPerson.doctorName}`,
-                    ].filter(Boolean).join(' · ')}
-                  </p>
+                {age != null && <p className="text-white/40 text-sm">{t('people.yearsOld', { age })}</p>}
+                {selectedPerson.bloodGroup && (
+                  <p className="text-white/40 text-sm mt-2">{t('field.bloodGroup')} {optionLabel(t, selectedPerson.bloodGroup)}</p>
                 )}
+                {selectedPerson.allergies ? <p className="text-white/40 text-sm">{t('field.allergies')} {selectedPerson.allergies}</p> : null}
+                {selectedPerson.doctorName ? <p className="text-white/40 text-sm">{t('field.doctorName')} {selectedPerson.doctorName}</p> : null}
                 {selectedPerson.lockerHint ? <p className="text-white/40 text-sm mt-1">{selectedPerson.lockerHint}</p> : null}
               </div>
               <div className="flex items-center gap-1 shrink-0">
@@ -165,6 +216,27 @@ const PeopleSection = () => {
                 </button>
               </div>
             </div>
+
+            {(emergencyHref || phoneHref || selectedPerson.email) && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {emergencyHref && (
+                  <a href={emergencyHref} className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-rose-500/20 text-rose-100 text-sm">
+                    <Phone size={14} /> {t('people.callEmergency')}
+                  </a>
+                )}
+                {phoneHref && (
+                  <a href={phoneHref} className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-cyan-500/15 text-cyan-100 text-sm">
+                    <Phone size={14} /> {t('people.callPhone')}
+                  </a>
+                )}
+                {selectedPerson.email && (
+                  <a href={`mailto:${selectedPerson.email}`} className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 text-white/80 text-sm truncate max-w-full">
+                    {selectedPerson.email}
+                  </a>
+                )}
+              </div>
+            )}
+
             <p className="text-white/40 text-sm mb-3">{t('people.linkedCount', { count: linked.length })}</p>
             <div className="flex flex-wrap gap-2 mb-4">
               {QUICK_ADD.map((item) => (
@@ -181,23 +253,22 @@ const PeopleSection = () => {
             <div className="space-y-2">
               {linked.length === 0 && <p className="text-white/40 text-sm">{t('people.nothingLinked')}</p>}
               {linked.map((item) => (
-                <div key={item.id} className="bg-white/5 rounded-xl px-3 py-2 text-sm text-white/80">
-                  {t(`nav.${item._kind}`)} · {linkedTitle(item) || t('common.untitled')}
-                </div>
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onNavigate?.(item._kind, item.id)}
+                  className="w-full flex items-center justify-between gap-2 bg-white/5 hover:bg-white/10 rounded-xl px-3 py-2 text-sm text-white/80 text-left"
+                >
+                  <span className="truncate">{t(`nav.${item._kind}`)} · {linkedTitle(item) || t('common.untitled')}</span>
+                  <ChevronRight size={16} className="shrink-0 text-white/35" />
+                </button>
               ))}
             </div>
             <div className="mt-6 pt-4 border-t border-white/10">
               {confirmDelete ? (
                 <button
                   className="text-sm text-rose-300"
-                  onClick={() => {
-                    unlinkPerson(selectedPerson.id);
-                    const next = people.filter((person) => person.id !== selectedPerson.id);
-                    setPeople(next);
-                    storage.set('people', next);
-                    setSelected(null);
-                    setConfirmDelete(false);
-                  }}
+                  onClick={() => removePerson(selectedPerson)}
                 >
                   {t('people.confirmDelete')}
                 </button>
