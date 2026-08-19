@@ -12,6 +12,7 @@ export const TRANSLATIONS = {
       title: 'Where your data lives',
       short: 'This vault stays only in this browser on this device ({site}). Clearing this site’s data permanently deletes it. Your phone and other browsers do not get a copy unless you export a backup.',
       full: 'Family Vault does not save a file in Finder or Files. Encrypted records stay inside this browser for {site}. Clearing cookies, history, or website data for this site wipes the vault, and this app cannot restore it. Chrome and Safari keep separate copies. A laptop and a phone keep separate copies. Export an encrypted backup if you need the vault on another device.',
+      network: 'Using the app with Wi‑Fi or mobile data does not sync or upload the vault. The app only fetches its own page, scripts, and icons from GitHub Pages so the interface can load. It is blocked from talking to other websites.',
     },
     nav: {
       dashboard: 'Home',
@@ -419,6 +420,7 @@ export const TRANSLATIONS = {
       title: 'आपका डेटा कहाँ रहता है',
       short: 'यह वॉल्ट केवल इस ब्राउज़र में, इसी डिवाइस पर रहता है ({site})। इस साइट का डेटा साफ़ करने से वॉल्ट हमेशा के लिए मिट जाता है। फ़ोन या दूसरे ब्राउज़र पर कॉपी नहीं जाती, जब तक आप बैकअप निर्यात न करें।',
       full: 'परिवार वॉल्ट आपके फ़ोल्डर में कोई फ़ाइल नहीं बनाता। एन्क्रिप्टेड रिकॉर्ड इसी ब्राउज़र में {site} के लिए रहते हैं। कुकीज़, इतिहास या वेबसाइट डेटा साफ़ करने से वॉल्ट मिट जाता है और ऐप उसे वापस नहीं ला सकता। Chrome और Safari अलग-अलग कॉपी रखते हैं। लैपटॉप और फ़ोन भी अलग रखते हैं। दूसरे डिवाइस के लिए एन्क्रिप्टेड बैकअप निर्यात करें।',
+      network: 'वाई‑फ़ाई या मोबाइल डेटा चालू रखकर ऐप इस्तेमाल करने से वॉल्ट सिंक या अपलोड नहीं होता। ऐप केवल अपना पेज, स्क्रिप्ट और आइकन GitHub Pages से लाता है ताकि इंटरफ़ेस खुल सके। दूसरी वेबसाइटों से बात करना बंद है।',
     },
     nav: {
       dashboard: 'होम',

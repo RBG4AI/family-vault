@@ -19,6 +19,9 @@ const StorageDisclaimer = ({ variant = 'short', className = '' }) => {
           <p className={`text-amber-50/85 ${full ? 'text-sm leading-relaxed' : 'text-xs leading-relaxed'}`}>
             {t(full ? 'disclaimer.full' : 'disclaimer.short', { site })}
           </p>
+          <p className={`text-amber-50/85 mt-2 ${full ? 'text-sm leading-relaxed' : 'text-xs leading-relaxed'}`}>
+            {t('disclaimer.network')}
+          </p>
         </div>
       </div>
     </aside>
