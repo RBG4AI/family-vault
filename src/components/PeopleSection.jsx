@@ -43,7 +43,7 @@ const PeopleSection = () => {
         <div>
           <p className="text-xs tracking-[0.2em] uppercase text-cyan-300/80 mb-2">{t('nav.family')}</p>
           <h1 className="font-display text-3xl md:text-4xl text-white">{t('nav.people')}</h1>
-          <p className="text-white/50 mt-2">{people.length} {t('common.items')} · encrypted with the vault</p>
+          <p className="text-white/50 mt-2">{people.length} {t('common.items')} · {t('people.encrypted')}</p>
         </div>
         <button onClick={() => { setEdit(null); setOpen(true); }} className="btn-primary">
           <Plus size={18} /> {t('common.add')}
@@ -53,7 +53,7 @@ const PeopleSection = () => {
       {people.length === 0 ? (
         <div className="glass-panel rounded-3xl p-12 text-center">
           <Users className="w-10 h-10 text-white/30 mx-auto mb-4" />
-          <p className="text-white/60">Add family members, then attach logins and IDs to them.</p>
+          <p className="text-white/60">{t('people.empty')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

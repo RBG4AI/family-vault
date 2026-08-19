@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, Plus, Shield, Users, FileKey } from 'lucide-react';
 import LanguageSwitch from './LanguageSwitch';
+import { useI18n } from '../context/I18nContext';
 
 const VaultList = ({ vaults, onSelect, onCreate, onImport }) => {
+  const { t } = useI18n();
   const [importError, setImportError] = useState('');
 
   const handleImport = async (event) => {
@@ -15,7 +17,7 @@ const VaultList = ({ vaults, onSelect, onCreate, onImport }) => {
       await onImport(parsed);
       setImportError('');
     } catch (error) {
-      setImportError(error.message || 'Could not import backup.');
+      setImportError(error.message || t('list.importFailed'));
     }
   };
 
@@ -30,9 +32,9 @@ const VaultList = ({ vaults, onSelect, onCreate, onImport }) => {
           <div className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 glow-primary">
             <Lock className="w-8 h-8 text-white" />
           </div>
-          <p className="text-xs tracking-[0.22em] uppercase text-cyan-300/70 mb-2">On this device</p>
-          <h1 className="font-display text-4xl text-white mb-2">Family Vault</h1>
-          <p className="text-white/45">Encrypted locally. Nothing leaves this device unless you export a backup.</p>
+          <p className="text-xs tracking-[0.22em] uppercase text-cyan-300/70 mb-2">{t('app.onDevice')}</p>
+          <h1 className="font-display text-4xl text-white mb-2">{t('app.title')}</h1>
+          <p className="text-white/45">{t('app.tagline')}</p>
         </div>
 
         <div className="space-y-3">
@@ -48,7 +50,7 @@ const VaultList = ({ vaults, onSelect, onCreate, onImport }) => {
               <div className="min-w-0">
                 <h3 className="text-white font-medium truncate">{vault.name}</h3>
                 <p className="text-white/40 text-sm">
-                  {vault.isLegacy ? 'Needs encrypted upgrade' : vault.kind === 'family' ? 'Family vault' : 'Personal vault'}
+                  {vault.isLegacy ? t('list.legacy') : vault.kind === 'family' ? t('list.familyVault') : t('list.personalVault')}
                 </p>
               </div>
             </button>
@@ -61,7 +63,7 @@ const VaultList = ({ vaults, onSelect, onCreate, onImport }) => {
             <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
               <Plus className="w-6 h-6 text-white/50" />
             </div>
-            <span className="text-white/80 font-medium">Create new vault</span>
+            <span className="text-white/80 font-medium">{t('list.create')}</span>
           </button>
 
           <label className="w-full flex items-center gap-4 p-4 bg-white/5 rounded-2xl cursor-pointer hover:bg-white/10 transition-colors">
@@ -69,8 +71,8 @@ const VaultList = ({ vaults, onSelect, onCreate, onImport }) => {
               <FileKey className="w-6 h-6 text-white/50" />
             </div>
             <div>
-              <span className="text-white/80 font-medium block">Import encrypted backup</span>
-              <span className="text-white/35 text-sm">.vault.json file</span>
+              <span className="text-white/80 font-medium block">{t('list.import')}</span>
+              <span className="text-white/35 text-sm">{t('list.importHint')}</span>
             </div>
             <input type="file" accept="application/json,.json" className="hidden" onChange={handleImport} />
           </label>

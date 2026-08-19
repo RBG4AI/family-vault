@@ -3,8 +3,11 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Eye, EyeOff, Lock } from 'lucide-react';
 import PasswordStrengthMeter from './PasswordStrengthMeter';
 import { passwordScore } from '../crypto/vaultCrypto';
+import { useI18n } from '../context/I18nContext';
+import LanguageSwitch from './LanguageSwitch';
 
 const CreateVault = ({ onCreate, onBack, busy, error }) => {
+  const { t } = useI18n();
   const [name, setName] = useState('');
   const [kind, setKind] = useState('family');
   const [password, setPassword] = useState('');
@@ -15,15 +18,15 @@ const CreateVault = ({ onCreate, onBack, busy, error }) => {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!name.trim()) {
-      setLocalError('Give this vault a name, for example Family or Ravi.');
+      setLocalError(t('create.needName'));
       return;
     }
     if (password.length < 10 || passwordScore(password) < 3) {
-      setLocalError('Use at least 10 characters with mixed case, a number, and a symbol.');
+      setLocalError(t('create.weak'));
       return;
     }
     if (password !== confirm) {
-      setLocalError('Passwords do not match.');
+      setLocalError(t('create.mismatch'));
       return;
     }
     setLocalError('');
@@ -40,16 +43,16 @@ const CreateVault = ({ onCreate, onBack, busy, error }) => {
       >
         {onBack && (
           <button type="button" onClick={onBack} className="text-white/45 hover:text-white flex items-center gap-2 text-sm">
-            <ArrowLeft size={16} /> All vaults
+            <ArrowLeft size={16} /> {t('create.back')}
           </button>
         )}
         <div>
-          <h1 className="font-display text-3xl text-white mb-1">Create a vault</h1>
-          <p className="text-white/45 text-sm">Each vault is encrypted with its own master password. Use a Family vault for shared household data.</p>
+          <h1 className="font-display text-3xl text-white mb-1">{t('create.title')}</h1>
+          <p className="text-white/45 text-sm">{t('create.body')}</p>
         </div>
 
         <label className="block">
-          <span className="text-sm text-white/70">Vault name</span>
+          <span className="text-sm text-white/70">{t('create.name')}</span>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -61,8 +64,8 @@ const CreateVault = ({ onCreate, onBack, busy, error }) => {
 
         <div className="grid grid-cols-2 gap-2">
           {[
-            { id: 'family', label: 'Family' },
-            { id: 'personal', label: 'Personal' },
+            { id: 'family', label: t('create.family') },
+            { id: 'personal', label: t('create.personal') },
           ].map((option) => (
             <button
               key={option.id}
@@ -78,7 +81,7 @@ const CreateVault = ({ onCreate, onBack, busy, error }) => {
         </div>
 
         <label className="block">
-          <span className="text-sm text-white/70">Master password</span>
+          <span className="text-sm text-white/70">{t('create.password')}</span>
           <div className="relative mt-2">
             <input
               type={show ? 'text' : 'password'}
@@ -95,7 +98,7 @@ const CreateVault = ({ onCreate, onBack, busy, error }) => {
         </label>
 
         <label className="block">
-          <span className="text-sm text-white/70">Confirm password</span>
+          <span className="text-sm text-white/70">{t('create.confirm')}</span>
           <input
             type={show ? 'text' : 'password'}
             value={confirm}
@@ -113,8 +116,9 @@ const CreateVault = ({ onCreate, onBack, busy, error }) => {
           className="w-full btn-primary py-3.5"
         >
           <Lock size={18} />
-          {busy ? 'Encrypting…' : 'Create encrypted vault'}
+          {busy ? t('create.busy') : t('create.submit')}
         </button>
+        <LanguageSwitch />
       </motion.form>
     </div>
   );

@@ -13,7 +13,8 @@ const LanguageSwitch = ({ className = '' }) => {
             key={code}
             type="button"
             onClick={() => setLang(code)}
-            className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+            aria-pressed={lang === code}
+            className={`px-3 py-1.5 rounded-full text-sm border transition-colors min-h-11 ${
               lang === code
                 ? 'border-cyan-300/40 bg-cyan-300/15 text-white'
                 : 'border-white/10 text-white/50 hover:text-white hover:bg-white/5'

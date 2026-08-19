@@ -116,7 +116,7 @@ const Settings = () => {
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-3xl">
         <div>
           <p className="text-xs tracking-[0.22em] uppercase text-cyan-300/70 mb-2">Vault</p>
-          <h1 className="font-display text-3xl md:text-4xl text-white mb-2">Settings</h1>
+          <h1 className="font-display text-3xl md:text-4xl text-white mb-2">{t('nav.settings')}</h1>
           <p className="text-white/45">This vault is encrypted on this device with AES-256-GCM. Your master password is never stored.</p>
         </div>
 
