@@ -18,8 +18,9 @@ import { downloadVaultBackup } from '../utils/exportBackup';
 import { backupAgeDays, getLastBackupAt, isTesterTools, setTesterTools } from '../utils/devicePrefs';
 import AccessPrint from './AccessPrint';
 import { printSection } from '../utils/printSection';
+import BackButton from './BackButton';
 
-const Settings = () => {
+const Settings = ({ onBack }) => {
   const vault = useVaultContext();
   const { t } = useI18n();
   const [currentPassword, setCurrentPassword] = useState('');
@@ -172,6 +173,9 @@ const Settings = () => {
   return (
     <>
     <div className="p-4 md:p-6 mt-16 print-hide">
+      <div className="max-w-3xl">
+        <BackButton onClick={onBack} />
+      </div>
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-3xl">
         <div>
           <p className="text-xs tracking-[0.22em] uppercase text-cyan-300/70 mb-2">{t('settings.eyebrow')}</p>

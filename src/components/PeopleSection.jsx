@@ -6,6 +6,7 @@ import AddCredentialModal from './AddCredentialModal';
 import { useI18n } from '../context/I18nContext';
 import { useToast } from '../context/ToastContext';
 import { ageFromBirthday, optionLabel, telHref } from '../utils/telLink';
+import BackButton from './BackButton';
 
 const initials = (name = '') =>
   name
@@ -64,7 +65,7 @@ const QUICK_ADD = [
   { form: 'note', bucket: 'notes', nav: 'notes' },
 ];
 
-const PeopleSection = ({ onNavigate, focusId, onFocusHandled }) => {
+const PeopleSection = ({ onNavigate, focusId, onFocusHandled, onBack }) => {
   const { t } = useI18n();
   const { toast } = useToast();
   const [people, setPeople] = useState(() => storage.get('people') || []);
@@ -140,6 +141,7 @@ const PeopleSection = ({ onNavigate, focusId, onFocusHandled }) => {
 
   return (
     <div className="p-4 md:p-8 mt-16">
+      <BackButton onClick={onBack} />
       <div className="flex items-end justify-between mb-8">
         <div>
           <p className="text-xs tracking-[0.2em] uppercase text-cyan-300/80 mb-2">{t('nav.family')}</p>

@@ -174,6 +174,7 @@ export const TRANSLATIONS = {
       close: 'Close',
       undo: 'Undo',
       deleted: 'Deleted',
+      back: 'Back',
     },
     modal: {
       add: {
@@ -662,6 +663,7 @@ export const TRANSLATIONS = {
       close: 'बंद करें',
       undo: 'पूर्ववत',
       deleted: 'हटा दिया गया',
+      back: 'वापस',
     },
     modal: {
       add: {

@@ -29,10 +29,32 @@ function App() {
   const { toast } = useToast();
   const [activeSection, setActiveSection] = useState('dashboard');
   const [openRecord, setOpenRecord] = useState(null);
+  const [navHistory, setNavHistory] = useState([]);
+
+  const goHome = useCallback(() => {
+    setOpenRecord(null);
+    setNavHistory([]);
+    setActiveSection('dashboard');
+  }, []);
 
   const goTo = useCallback((section, itemId) => {
     setOpenRecord(itemId ? { section, itemId } : null);
-    setActiveSection(section);
+    setActiveSection((current) => {
+      if (section !== current) {
+        setNavHistory((history) => [...history, current]);
+      }
+      return section;
+    });
+  }, []);
+
+  const goBack = useCallback(() => {
+    setNavHistory((history) => {
+      const next = [...history];
+      const previous = next.pop() || 'dashboard';
+      setOpenRecord(null);
+      setActiveSection(previous);
+      return next;
+    });
   }, []);
 
   const clearOpenRecord = useCallback(() => setOpenRecord(null), []);
@@ -123,6 +145,7 @@ function App() {
         return (
           <PeopleSection
             onNavigate={goTo}
+            onBack={goBack}
             focusId={openRecord?.section === 'people' ? openRecord.itemId : null}
             onFocusHandled={clearOpenRecord}
           />
@@ -130,32 +153,33 @@ function App() {
       case 'vitals':
         return (
           <VitalsSection
+            onBack={goBack}
             focusId={openRecord?.section === 'vitals' ? openRecord.itemId : null}
             onFocusHandled={clearOpenRecord}
           />
         );
       case 'vehicles':
-        return <CredentialsSection type="vehicles" title={t('nav.vehicles')} onNavigate={goTo} focusId={openRecord?.section === 'vehicles' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} />;
+        return <CredentialsSection type="vehicles" title={t('nav.vehicles')} onNavigate={goTo} focusId={openRecord?.section === 'vehicles' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} onBack={goBack} />;
       case 'properties':
-        return <CredentialsSection type="properties" title={t('nav.properties')} onNavigate={goTo} focusId={openRecord?.section === 'properties' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} />;
+        return <CredentialsSection type="properties" title={t('nav.properties')} onNavigate={goTo} focusId={openRecord?.section === 'properties' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} onBack={goBack} />;
       case 'credentials':
-        return <CredentialsSection type="credentials" title={t('nav.credentials')} onNavigate={goTo} focusId={openRecord?.section === 'credentials' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} />;
+        return <CredentialsSection type="credentials" title={t('nav.credentials')} onNavigate={goTo} focusId={openRecord?.section === 'credentials' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} onBack={goBack} />;
       case 'emails':
-        return <CredentialsSection type="emails" title={t('nav.emails')} onNavigate={goTo} focusId={openRecord?.section === 'emails' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} />;
+        return <CredentialsSection type="emails" title={t('nav.emails')} onNavigate={goTo} focusId={openRecord?.section === 'emails' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} onBack={goBack} />;
       case 'banking':
-        return <CredentialsSection type="banking" title={t('nav.banking')} onNavigate={goTo} focusId={openRecord?.section === 'banking' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} />;
+        return <CredentialsSection type="banking" title={t('nav.banking')} onNavigate={goTo} focusId={openRecord?.section === 'banking' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} onBack={goBack} />;
       case 'cards':
-        return <CredentialsSection type="cards" title={t('nav.cards')} onNavigate={goTo} focusId={openRecord?.section === 'cards' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} />;
+        return <CredentialsSection type="cards" title={t('nav.cards')} onNavigate={goTo} focusId={openRecord?.section === 'cards' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} onBack={goBack} />;
       case 'government':
-        return <CredentialsSection type="government" title={t('nav.government')} onNavigate={goTo} focusId={openRecord?.section === 'government' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} />;
+        return <CredentialsSection type="government" title={t('nav.government')} onNavigate={goTo} focusId={openRecord?.section === 'government' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} onBack={goBack} />;
       case 'insurance':
-        return <CredentialsSection type="insurance" title={t('nav.insurance')} onNavigate={goTo} focusId={openRecord?.section === 'insurance' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} />;
+        return <CredentialsSection type="insurance" title={t('nav.insurance')} onNavigate={goTo} focusId={openRecord?.section === 'insurance' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} onBack={goBack} />;
       case 'investments':
-        return <CredentialsSection type="investments" title={t('nav.investments')} onNavigate={goTo} focusId={openRecord?.section === 'investments' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} />;
+        return <CredentialsSection type="investments" title={t('nav.investments')} onNavigate={goTo} focusId={openRecord?.section === 'investments' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} onBack={goBack} />;
       case 'notes':
-        return <CredentialsSection type="notes" title={t('nav.notes')} onNavigate={goTo} focusId={openRecord?.section === 'notes' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} />;
+        return <CredentialsSection type="notes" title={t('nav.notes')} onNavigate={goTo} focusId={openRecord?.section === 'notes' ? openRecord.itemId : null} onFocusHandled={clearOpenRecord} onBack={goBack} />;
       case 'settings':
-        return <Settings />;
+        return <Settings onBack={goBack} />;
       default:
         return <Dashboard onNavigate={goTo} />;
     }
@@ -173,6 +197,7 @@ function App() {
         <Sidebar
           activeSection={activeSection}
           setActiveSection={goTo}
+          onHome={goHome}
           onLock={vault.lock}
           vaultName={vault.meta?.name}
         />

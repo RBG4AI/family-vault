@@ -5,8 +5,9 @@ import { storage } from '../utils/storage';
 import AddCredentialModal from './AddCredentialModal';
 import { useI18n } from '../context/I18nContext';
 import { useToast } from '../context/ToastContext';
+import BackButton from './BackButton';
 
-const VitalsSection = ({ focusId, onFocusHandled }) => {
+const VitalsSection = ({ focusId, onFocusHandled, onBack }) => {
   const { t } = useI18n();
   const { toast } = useToast();
   const people = storage.get('people') || [];
@@ -71,6 +72,7 @@ const VitalsSection = ({ focusId, onFocusHandled }) => {
 
   return (
     <div className="p-4 md:p-8 mt-16 space-y-6">
+      <BackButton onClick={onBack} />
       <div className="flex items-end justify-between">
         <div>
           <p className="text-xs tracking-[0.2em] uppercase text-rose-300/80 mb-2">{t('vitals.health')}</p>

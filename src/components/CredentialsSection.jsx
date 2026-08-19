@@ -7,6 +7,7 @@ import AddCredentialModal from './AddCredentialModal';
 import SmartSearch from './SmartSearch';
 import { useI18n } from '../context/I18nContext';
 import { useToast } from '../context/ToastContext';
+import BackButton from './BackButton';
 
 const FORM_TYPE = {
   credentials: 'app',
@@ -69,7 +70,7 @@ const inAmountRange = (amount, range) => {
 
 const AMOUNT_TYPES = new Set(['investments', 'insurance', 'cards']);
 
-const CredentialsSection = ({ type, title, onNavigate, focusId, onFocusHandled }) => {
+const CredentialsSection = ({ type, title, onNavigate, focusId, onFocusHandled, onBack }) => {
   const { t } = useI18n();
   const { toast } = useToast();
   const [items, setItems] = useState([]);
@@ -180,6 +181,7 @@ const CredentialsSection = ({ type, title, onNavigate, focusId, onFocusHandled }
 
   return (
     <div className="p-4 md:p-6 mt-16">
+      <BackButton onClick={onBack} />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { useI18n } from '../context/I18nContext';
 
-const Sidebar = ({ activeSection, setActiveSection, onLock, vaultName }) => {
+const Sidebar = ({ activeSection, setActiveSection, onHome, onLock, vaultName }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useI18n();
   const asideRef = useRef(null);
@@ -40,7 +40,7 @@ const Sidebar = ({ activeSection, setActiveSection, onLock, vaultName }) => {
   }, [isOpen]);
 
   const goHome = () => {
-    setActiveSection('dashboard');
+    onHome?.();
     closeSidebar();
   };
 
