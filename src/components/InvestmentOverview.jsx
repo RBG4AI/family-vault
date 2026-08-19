@@ -132,7 +132,7 @@ const InvestmentOverview = ({ investments = [], people = [], onNavigate }) => {
         </button>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="hidden md:grid md:grid-cols-2 gap-4">
         <div className="rounded-2xl bg-white/[0.03] border border-white/5 p-3">
           <p className="text-white/60 text-xs uppercase tracking-wider px-1 mb-1">{t('dash.byPerson')}</p>
           <Donut data={personSlices} colors={personColors} total={total} emptyLabel={t('dash.noInvestments')} centerHint={t('dash.byPerson')} />

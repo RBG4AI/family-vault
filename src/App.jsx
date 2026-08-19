@@ -187,7 +187,7 @@ function App() {
 
   return (
     <AmbientBackground>
-      <div className="min-h-screen flex print:block">
+      <div className="min-h-dvh md:h-dvh flex md:overflow-hidden print:block print:h-auto print:overflow-visible">
         <OfflineIndicator />
         {secondsLeft !== null && (
           <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-amber-300 text-dark-900 px-4 py-2 rounded-full text-sm font-medium print-hide">
@@ -202,15 +202,14 @@ function App() {
           vaultName={vault.meta?.name}
         />
         <GlobalSearch onNavigate={goTo} />
-        <main className="flex-1 overflow-y-auto pb-8 print:overflow-visible print:pb-0">
+        <main className="flex-1 min-w-0 scroll-touch pb-[max(2rem,env(safe-area-inset-bottom))] md:min-h-0 md:overflow-y-auto print:overflow-visible print:pb-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeSection}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-              className="min-h-full"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
             >
               {renderContent()}
             </motion.div>

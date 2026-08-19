@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import {
   AlertTriangle,
   Building2,
@@ -92,15 +91,15 @@ const Dashboard = ({ onNavigate }) => {
 
   return (
     <>
-    <div className="p-4 md:p-8 mt-16 space-y-6 print:hidden print-hide">
+    <div className="px-4 pt-20 pb-4 md:p-8 md:pt-24 space-y-5 md:space-y-6 print:hidden print-hide">
       <div>
-        <p className="text-xs tracking-[0.22em] uppercase text-cyan-300/70 mb-2">{t('dash.eyebrow')}</p>
-        <h1 className="font-display text-3xl md:text-5xl text-white leading-tight">{t('dash.title')}</h1>
-        <p className="text-white/45 mt-3 max-w-xl">{t('dash.subtitle')}</p>
+        <p className="text-[10px] md:text-xs tracking-[0.22em] uppercase text-cyan-300/70 mb-1">{t('dash.eyebrow')}</p>
+        <h1 className="font-display text-2xl md:text-5xl text-white leading-tight">{t('dash.title')}</h1>
+        <p className="hidden md:block text-white/45 mt-3 max-w-xl">{t('dash.subtitle')}</p>
       </div>
 
       {staleBackup && (
-        <div className="rounded-3xl p-5 bg-gradient-to-br from-amber-400/20 to-orange-500/10 border border-amber-400/25 space-y-3">
+        <div className="rounded-2xl md:rounded-3xl p-4 md:p-5 bg-gradient-to-br from-amber-400/20 to-orange-500/10 border border-amber-400/25 space-y-3">
           <p className="text-white font-medium">{t('dash.backupTitle')}</p>
           <p className="text-white/50 text-sm">
             {lastBackup ? t('dash.backupStale') : t('dash.backupNever')}
@@ -113,7 +112,7 @@ const Dashboard = ({ onNavigate }) => {
       )}
 
       {people.length === 0 && (
-        <div className="glass-panel rounded-3xl p-8 text-center space-y-3">
+        <div className="glass-panel rounded-2xl md:rounded-3xl p-6 md:p-8 text-center space-y-3">
           <Users className="w-10 h-10 text-white/30 mx-auto" />
           <p className="text-white">{t('dash.addFamilyTitle')}</p>
           <p className="text-white/45 text-sm">{t('people.empty')}</p>
@@ -123,29 +122,26 @@ const Dashboard = ({ onNavigate }) => {
         </div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-        {stats.map((stat, index) => {
+      <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-3">
+        {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <motion.button
+            <button
               type="button"
               key={stat.title}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.03 }}
               onClick={() => stat.section && onNavigate(stat.section)}
-              className={`rounded-3xl p-4 text-left bg-gradient-to-br ${stat.tint} text-white`}
+              className={`rounded-2xl md:rounded-3xl p-2.5 md:p-4 text-left bg-gradient-to-br ${stat.tint} text-white`}
             >
-              <Icon className="w-5 h-5 opacity-90" />
-              <p className="font-display text-2xl mt-3">{stat.value}</p>
-              <p className="text-xs opacity-90 mt-1">{stat.title}</p>
-            </motion.button>
+              <Icon className="w-4 h-4 md:w-5 md:h-5 opacity-90" />
+              <p className="font-display text-lg md:text-2xl mt-1.5 md:mt-3 tabular-nums">{stat.value}</p>
+              <p className="text-[10px] md:text-xs opacity-90 mt-0.5 leading-tight truncate">{stat.title}</p>
+            </button>
           );
         })}
       </div>
 
-      <div className="glass-panel rounded-3xl p-5 md:p-6">
-        <h2 className="text-white font-medium mb-4">{t('dash.attention')}</h2>
+      <div className="glass-panel rounded-2xl md:rounded-3xl p-4 md:p-6">
+        <h2 className="text-white font-medium mb-3 md:mb-4">{t('dash.attention')}</h2>
         {renewals.length === 0 ? (
           <p className="text-white/40 text-sm">{t('dash.noAttention')}</p>
         ) : (
@@ -155,15 +151,15 @@ const Dashboard = ({ onNavigate }) => {
                 type="button"
                 key={item.id}
                 onClick={() => onNavigate(item.section, item.itemId)}
-                className={`w-full flex items-center justify-between rounded-2xl px-4 py-3 text-left ${
+                className={`w-full flex items-center justify-between gap-3 rounded-2xl px-3 md:px-4 py-2.5 md:py-3 text-left ${
                   item.days < 0 ? 'bg-rose-400/15' : item.days <= 14 ? 'bg-amber-400/15' : 'bg-cyan-400/10'
                 }`}
               >
-                <div>
-                  <p className="text-white text-sm">{item.title}</p>
-                  <p className="text-white/40 text-xs">{item.subtitle} · {item.category}</p>
+                <div className="min-w-0">
+                  <p className="text-white text-sm truncate">{item.title}</p>
+                  <p className="text-white/40 text-xs truncate">{item.subtitle} · {item.category}</p>
                 </div>
-                <span className={`text-xs font-medium ${item.days < 0 ? 'text-rose-200' : item.days <= 14 ? 'text-amber-200' : 'text-cyan-200'}`}>
+                <span className={`text-xs font-medium shrink-0 ${item.days < 0 ? 'text-rose-200' : item.days <= 14 ? 'text-amber-200' : 'text-cyan-200'}`}>
                   {item.days < 0 ? t('dash.overdue', { days: Math.abs(item.days) }) : t('dash.daysLeft', { days: item.days })}
                 </span>
               </button>
@@ -175,7 +171,7 @@ const Dashboard = ({ onNavigate }) => {
       {people.length > 0 && (
         <div>
           <h2 className="text-white font-medium mb-3">{t('dash.family')}</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="flex md:grid gap-2 md:gap-3 overflow-x-auto scroll-touch hide-scroll snap-x snap-mandatory -mx-4 px-4 pb-1 md:mx-0 md:px-0 md:overflow-visible md:grid-cols-3 lg:grid-cols-4">
             {people.map((person) => {
               const tint = REL_TINT[person.relation] || REL_TINT.Other;
               return (
@@ -183,10 +179,10 @@ const Dashboard = ({ onNavigate }) => {
                   type="button"
                   key={person.id}
                   onClick={() => onNavigate('people', person.id)}
-                  className={`rounded-3xl p-4 text-left bg-gradient-to-br ${tint} text-white`}
+                  className={`snap-start shrink-0 w-[8.5rem] md:w-auto rounded-2xl md:rounded-3xl p-3 md:p-4 text-left bg-gradient-to-br ${tint} text-white`}
                 >
                   <p className="font-semibold truncate">{person.name}</p>
-                  <p className="text-xs opacity-90 mt-1">{person.relation ? optionLabel(t, person.relation) : t('people.familyMember')}</p>
+                  <p className="text-xs opacity-90 mt-1 truncate">{person.relation ? optionLabel(t, person.relation) : t('people.familyMember')}</p>
                 </button>
               );
             })}
@@ -194,26 +190,26 @@ const Dashboard = ({ onNavigate }) => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <button type="button" onClick={() => printSection('emergency')} className="rounded-3xl p-4 bg-gradient-to-br from-rose-400/20 to-orange-500/10 text-white text-left">
+      <div className="grid grid-cols-3 gap-2 md:gap-3">
+        <button type="button" onClick={() => printSection('emergency')} className="rounded-2xl md:rounded-3xl p-3 md:p-4 bg-gradient-to-br from-rose-400/20 to-orange-500/10 text-white text-left">
           <Printer size={16} className="opacity-80" />
-          <p className="mt-3 font-medium">{t('sheet.print')}</p>
+          <p className="mt-2 md:mt-3 text-xs md:text-sm font-medium leading-tight">{t('sheet.print')}</p>
         </button>
-        <button type="button" onClick={() => printSection('access')} className="rounded-3xl p-4 bg-gradient-to-br from-violet-400/20 to-fuchsia-500/10 text-white text-left">
+        <button type="button" onClick={() => printSection('access')} className="rounded-2xl md:rounded-3xl p-3 md:p-4 bg-gradient-to-br from-violet-400/20 to-fuchsia-500/10 text-white text-left">
           <Building2 size={16} className="opacity-80" />
-          <p className="mt-3 font-medium">{t('access.print')}</p>
+          <p className="mt-2 md:mt-3 text-xs md:text-sm font-medium leading-tight">{t('access.print')}</p>
         </button>
-        <button type="button" onClick={() => downloadRenewalsIcs(collectRenewals(data, people))} className="rounded-3xl p-4 bg-gradient-to-br from-cyan-400/20 to-blue-500/10 text-white text-left">
+        <button type="button" onClick={() => downloadRenewalsIcs(collectRenewals(data, people))} className="rounded-2xl md:rounded-3xl p-3 md:p-4 bg-gradient-to-br from-cyan-400/20 to-blue-500/10 text-white text-left">
           <Calendar size={16} className="opacity-80" />
-          <p className="mt-3 font-medium">{t('sheet.calendar')}</p>
+          <p className="mt-2 md:mt-3 text-xs md:text-sm font-medium leading-tight">{t('sheet.calendar')}</p>
         </button>
       </div>
 
       <InvestmentOverview investments={investments} people={people} onNavigate={onNavigate} />
 
-      <div className="glass-panel rounded-3xl p-6 space-y-3">
+      <div className="glass-panel rounded-2xl md:rounded-3xl p-4 md:p-6 space-y-3">
         <h3 className="text-white font-medium">{t('dash.encrypted')}</h3>
-        <p className="text-white/45 text-sm">{t('dash.encryptedBody')}</p>
+        <p className="text-white/45 text-sm hidden md:block">{t('dash.encryptedBody')}</p>
         <StorageDisclaimer />
       </div>
     </div>
