@@ -160,7 +160,7 @@ const Settings = () => {
           <p className="text-white/45">{t('settings.intro')}</p>
         </div>
 
-        <StorageDisclaimer variant="full" />
+        <StorageDisclaimer />
 
         <section className="glass-panel rounded-3xl p-6 space-y-4 border border-cyan-400/20">
           <div className="flex items-center gap-2">
