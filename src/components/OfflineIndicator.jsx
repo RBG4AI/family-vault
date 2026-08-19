@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Wifi, WifiOff } from 'lucide-react';
+import { WifiOff } from 'lucide-react';
 
 const OfflineIndicator = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -20,7 +20,7 @@ const OfflineIndicator = () => {
   if (isOnline) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-50 bg-red-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg">
+    <div className="fixed top-4 right-4 z-50 bg-amber-300 text-dark-900 px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium">
       <WifiOff className="w-4 h-4" />
       <span className="text-sm">Offline Mode</span>
     </div>

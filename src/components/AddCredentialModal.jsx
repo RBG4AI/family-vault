@@ -2,11 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus } from 'lucide-react';
 import PasswordStrengthMeter from './PasswordStrengthMeter';
+import PasswordGenerator from './PasswordGenerator';
+import { storage } from '../utils/storage';
+import { validateField } from '../utils/validation';
+import { useI18n } from '../context/I18nContext';
 
 const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type }) => {
+  const { t } = useI18n();
   const [formData, setFormData] = useState({});
   const [tags, setTags] = useState([]);
   const [newTag, setNewTag] = useState('');
+  const [fieldError, setFieldError] = useState('');
+  const people = storage.get('people') || [];
 
   useEffect(() => {
     if (editData) {
@@ -94,6 +101,51 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type }) => {
           { key: 'billingDate', label: 'Billing Date', type: 'number' },
           { key: 'dueDate', label: 'Due Date', type: 'number' },
         ];
+      case 'note':
+        return [
+          { key: 'title', label: 'Title', type: 'text', required: true },
+          { key: 'content', label: 'Secret note', type: 'textarea', required: true },
+        ];
+      case 'person':
+        return [
+          { key: 'name', label: 'Name', type: 'text', required: true },
+          { key: 'relation', label: 'Relation', type: 'select', options: ['Self', 'Spouse', 'Parent', 'Child', 'Sibling', 'Grandparent', 'Other'] },
+          { key: 'birthday', label: 'Birthday', type: 'date' },
+          { key: 'phone', label: 'Phone', type: 'tel' },
+          { key: 'email', label: 'Email', type: 'email' },
+          { key: 'notes', label: 'Notes', type: 'textarea' },
+        ];
+      case 'vehicle':
+        return [
+          { key: 'name', label: 'Vehicle name', type: 'text', required: true },
+          { key: 'vehicleType', label: 'Type', type: 'select', options: ['Car', 'Bike', 'Scooter', 'Other'] },
+          { key: 'registrationNumber', label: 'Registration number', type: 'text', required: true },
+          { key: 'insurer', label: 'Insurer', type: 'text' },
+          { key: 'policyNumber', label: 'Policy number', type: 'text' },
+          { key: 'insuranceExpiry', label: 'Insurance expiry', type: 'date' },
+          { key: 'pucExpiry', label: 'PUC expiry', type: 'date' },
+          { key: 'rcExpiry', label: 'RC expiry', type: 'date' },
+          { key: 'notes', label: 'Notes', type: 'textarea' },
+        ];
+      case 'property':
+        return [
+          { key: 'name', label: 'Property name', type: 'text', required: true },
+          { key: 'propertyType', label: 'Type', type: 'select', options: ['Home', 'Plot', 'Apartment', 'Shop', 'Other'] },
+          { key: 'address', label: 'Address', type: 'textarea', required: true },
+          { key: 'surveyNumber', label: 'Survey / registration number', type: 'text' },
+          { key: 'taxDueDate', label: 'Tax due date', type: 'date' },
+          { key: 'notes', label: 'Notes', type: 'textarea' },
+        ];
+      case 'vital':
+        return [
+          { key: 'date', label: 'Date', type: 'date', required: true },
+          { key: 'systolic', label: 'BP systolic', type: 'number' },
+          { key: 'diastolic', label: 'BP diastolic', type: 'number' },
+          { key: 'sugar', label: 'Blood sugar', type: 'number' },
+          { key: 'weight', label: 'Weight (kg)', type: 'number' },
+          { key: 'heartRate', label: 'Heart rate', type: 'number' },
+          { key: 'notes', label: 'Notes', type: 'textarea' },
+        ];
       default:
         return [];
     }
@@ -101,10 +153,17 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const error =
+      validateField('ifscCode', formData.ifscCode) ||
+      validateField('documentNumber', formData.documentNumber, formData);
+    if (error) {
+      setFieldError(error);
+      return;
+    }
     const finalData = {
       ...formData,
       tags,
-      id: editData?.id || Date.now().toString(),
+      id: editData?.id || crypto.randomUUID(),
       createdAt: editData?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -139,7 +198,7 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type }) => {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative glass-dark rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
+            className="relative glass-panel rounded-3xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-white">
@@ -153,7 +212,22 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type }) => {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
+              {type !== 'person' && people.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('common.member')}</label>
+                  <select
+                    value={formData.personId || ''}
+                    onChange={(e) => setFormData({ ...formData, personId: e.target.value })}
+                    className="field"
+                  >
+                    <option value="" className="bg-dark-800">Not linked</option>
+                    {people.map((person) => (
+                      <option key={person.id} value={person.id} className="bg-dark-800">{person.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               {getFormFields().map((field) => (
                 <div key={field.key}>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -165,7 +239,7 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type }) => {
                       value={formData[field.key] || ''}
                       onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
                       required={field.required}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition-colors"
+                      className="field"
                     >
                       <option value="">Select {field.label}</option>
                       {field.options.map((option) => (
@@ -180,7 +254,7 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type }) => {
                       onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
                       required={field.required}
                       rows={3}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-colors resize-none"
+                      className="field resize-none"
                       placeholder={field.label}
                     />
                   ) : field.type === 'checkbox' ? (
@@ -200,14 +274,22 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type }) => {
                         value={formData[field.key] || ''}
                         onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
                         required={field.required}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-colors"
+                        autoComplete="off"
+                        className="field"
                         placeholder={field.label}
                       />
                       {field.type === 'password' && <PasswordStrengthMeter password={formData[field.key] || ''} />}
+                      {(field.key === 'password' || field.key === 'netBankingPassword') && (
+                        <div className="mt-3">
+                          <PasswordGenerator onUse={(password) => setFormData({ ...formData, [field.key]: password })} />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
               ))}
+
+              {fieldError && <p className="text-red-400 text-sm">{fieldError}</p>}
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Tags</label>
@@ -246,15 +328,15 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type }) => {
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 px-4 py-3 text-gray-400 border border-white/10 rounded-xl hover:bg-white/5 transition-colors"
+                  className="flex-1 px-4 py-3 text-white/50 border border-white/10 rounded-xl hover:bg-white/5 transition-colors"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-3 gradient-primary text-white rounded-xl hover:opacity-90 transition-opacity"
+                  className="flex-1 btn-primary"
                 >
-                  {editData ? 'Update' : 'Save'}
+                  {editData ? t('common.update') : t('common.save')}
                 </button>
               </div>
             </form>

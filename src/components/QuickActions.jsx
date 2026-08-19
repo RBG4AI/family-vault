@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, Download, Upload, Shield, Palette } from 'lucide-react';
+import { Plus, Search, Download, Shield } from 'lucide-react';
 
 const QuickActions = ({ onAction }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,7 +37,7 @@ const QuickActions = ({ onAction }) => {
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ delay: index * 0.1 }}
                   onClick={() => handleAction(action.id)}
-                  className={`flex items-center gap-3 px-4 py-3 ${action.color} text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 whitespace-nowrap`}
+                  className="flex items-center gap-3 px-4 py-3 glass-panel text-white rounded-2xl whitespace-nowrap hover:border-white/20"
                 >
                   <Icon size={20} />
                   {action.label}
@@ -52,7 +52,7 @@ const QuickActions = ({ onAction }) => {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-14 h-14 gradient-primary rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 ${
+        className={`w-14 h-14 gradient-primary rounded-full flex items-center justify-center glow-primary transition-all duration-200 ${
           isOpen ? 'rotate-45' : ''
         }`}
       >

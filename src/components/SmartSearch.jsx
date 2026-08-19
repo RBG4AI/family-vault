@@ -29,7 +29,7 @@ const SmartSearch = ({ onSearch, onFilter }) => {
           placeholder="Search across all data..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-12 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-primary-500 transition-colors"
+          className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-12 py-3 text-white placeholder-white/30 focus:outline-none focus:border-cyan-400/50"
         />
         <button
           onClick={() => setShowFilters(!showFilters)}
@@ -47,7 +47,7 @@ const SmartSearch = ({ onSearch, onFilter }) => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="glass-dark rounded-xl p-4 space-y-3"
+            className="glass-panel rounded-2xl p-4 space-y-3"
           >
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <select

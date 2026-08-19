@@ -1,0 +1,8 @@
+node_modules
+dist
+.DS_Store
+*.local
+vault-offline.html
+FamilyVault.html
+ParivarVault-main/
+*.vault.json

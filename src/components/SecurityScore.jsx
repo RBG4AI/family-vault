@@ -83,15 +83,15 @@ const SecurityScore = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-dark rounded-2xl p-6"
+      className="glass-panel rounded-3xl p-6"
     >
       <div className="flex items-center gap-3 mb-6">
         <Shield className="w-6 h-6 text-primary-400" />
-        <h3 className="text-xl font-semibold text-white">Security Score</h3>
+        <h3 className="font-display text-xl text-white">Security Score</h3>
       </div>
 
       <div className="text-center mb-6">
-        <div className={`text-6xl font-bold mb-2 ${getScoreColor(score)}`}>
+        <div className={`font-display text-6xl mb-2 ${getScoreColor(score)}`}>
           {score}
         </div>
         <div className="w-full bg-gray-700 rounded-full h-3 mb-4">

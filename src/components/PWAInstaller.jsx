@@ -13,7 +13,7 @@ const PWAInstaller = () => {
         <h3 className="text-xl font-semibold text-white">Mobile App</h3>
       </div>
 
-      <div className="glass-dark rounded-xl p-6">
+      <div className="glass-panel rounded-3xl p-6">
         <div className="flex items-center gap-3 mb-4">
           {isOnline ? (
             <Wifi className="w-5 h-5 text-green-400" />
@@ -69,11 +69,9 @@ const PWAInstaller = () => {
       <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
         <h4 className="font-medium text-blue-400 mb-2">PWA Benefits</h4>
         <ul className="text-gray-400 text-sm space-y-1">
-          <li>• Works completely offline</li>
-          <li>• Install on multiple devices</li>
-          <li>• Automatic background sync</li>
-          <li>• Native app experience</li>
-          <li>• No app store required</li>
+          <li>• Works offline after the first visit</li>
+          <li>• Vault data stays in this device’s encrypted storage</li>
+          <li>• No app store and no account required</li>
         </ul>
       </div>
     </div>

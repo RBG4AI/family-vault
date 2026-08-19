@@ -1,0 +1,54 @@
+const daysFrom = (iso) => {
+  if (!iso) return null;
+  const value = String(iso).length === 7 ? `${iso}-01` : iso;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  date.setHours(0, 0, 0, 0);
+  return Math.round((date - start) / 86400000);
+};
+
+const nextBirthday = (iso) => {
+  if (!iso) return null;
+  const birth = new Date(iso);
+  if (Number.isNaN(birth.getTime())) return null;
+  const now = new Date();
+  const next = new Date(now.getFullYear(), birth.getMonth(), birth.getDate());
+  if (next < now) next.setFullYear(now.getFullYear() + 1);
+  return next.toISOString().slice(0, 10);
+};
+
+const push = (list, item, field, label, category) => {
+  const days = daysFrom(item[field]);
+  if (days === null) return;
+  list.push({
+    id: `${item.id}-${field}`,
+    title: label,
+    subtitle: item.name || item.appName || item.documentType || item.insuranceType || item.registrationNumber || item.title,
+    date: item[field],
+    days,
+    category,
+  });
+};
+
+export const collectRenewals = (data, people = []) => {
+  const list = [];
+  (data.government || []).forEach((item) => push(list, item, 'expiryDate', item.documentType || 'ID', 'IDs'));
+  (data.insurance || []).forEach((item) => push(list, item, 'policyEndDate', item.insuranceType || 'Insurance', 'Insurance'));
+  (data.investments || []).forEach((item) => push(list, item, 'maturityDate', item.name || 'Investment', 'Investments'));
+  (data.cards || []).forEach((item) => push(list, item, 'expiryDate', item.cardType || 'Card', 'Cards'));
+  (data.vehicles || []).forEach((item) => {
+    push(list, item, 'insuranceExpiry', `${item.name || 'Vehicle'} insurance`, 'Vehicles');
+    push(list, item, 'pucExpiry', `${item.name || 'Vehicle'} PUC`, 'Vehicles');
+    push(list, item, 'rcExpiry', `${item.name || 'Vehicle'} RC`, 'Vehicles');
+  });
+  (data.properties || []).forEach((item) => push(list, item, 'taxDueDate', `${item.name || 'Property'} tax`, 'Properties'));
+  (people || data.people || []).forEach((person) => {
+    const date = nextBirthday(person.birthday);
+    if (!date) return;
+    push(list, { ...person, birthdayNext: date }, 'birthdayNext', `${person.name}'s birthday`, 'Family');
+  });
+
+  return list.sort((a, b) => a.days - b.days);
+};

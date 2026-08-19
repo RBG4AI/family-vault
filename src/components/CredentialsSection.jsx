@@ -1,12 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { storage } from '../utils/storage';
 import CredentialCard from './CredentialCard';
 import AddCredentialModal from './AddCredentialModal';
 import SmartSearch from './SmartSearch';
+import { useI18n } from '../context/I18nContext';
+
+const FORM_TYPE = {
+  credentials: 'app',
+  emails: 'email',
+  cards: 'card',
+  banking: 'banking',
+  government: 'government',
+  insurance: 'insurance',
+  investments: 'investment',
+  notes: 'note',
+  vehicles: 'vehicle',
+  properties: 'property',
+};
 
 const CredentialsSection = ({ type, title }) => {
+  const { t } = useI18n();
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -102,18 +117,19 @@ const CredentialsSection = ({ type, title }) => {
         className="flex items-center justify-between mb-6"
       >
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">{title}</h1>
-          <p className="text-gray-400">{filteredItems.length} items</p>
+          <p className="text-xs tracking-[0.2em] uppercase text-cyan-300/70 mb-2">Vault</p>
+          <h1 className="font-display text-2xl md:text-4xl text-white mb-2">{title}</h1>
+          <p className="text-white/45">{filteredItems.length} {t('common.items')}</p>
         </div>
         
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-6 py-3 gradient-primary text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+          className="btn-primary"
         >
           <Plus size={20} />
-          Add New
+          {t('common.add')}
         </motion.button>
       </motion.div>
 
@@ -133,21 +149,21 @@ const CredentialsSection = ({ type, title }) => {
           animate={{ opacity: 1 }}
           className="text-center py-12"
         >
-          <div className="w-24 h-24 gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 opacity-20">
+          <div className="w-24 h-24 gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 opacity-20 glow-primary">
             <Plus size={32} />
           </div>
-          <h3 className="text-xl font-semibold text-white mb-2">No {title.toLowerCase()} found</h3>
-          <p className="text-gray-400 mb-6">
+          <h3 className="font-display text-2xl text-white mb-2">No {title.toLowerCase()} yet</h3>
+          <p className="text-white/45 mb-6">
             {searchTerm || selectedTag !== 'All' 
               ? 'Try adjusting your search or filters' 
-              : `Add your first ${type} to get started`
+              : `Add your first ${title.toLowerCase()} — it stays encrypted in this vault`
             }
           </p>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="px-6 py-3 gradient-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
+            className="btn-primary"
           >
-            Add {type === 'credentials' ? 'Credential' : type === 'emails' ? 'Email' : type === 'banking' ? 'Bank Account' : type === 'cards' ? 'Card' : type === 'government' ? 'Government ID' : type === 'insurance' ? 'Insurance Policy' : type === 'investments' ? 'Investment' : 'Item'}
+            Add {type === 'credentials' ? 'Credential' : type === 'emails' ? 'Email' : type === 'banking' ? 'Bank Account' : type === 'cards' ? 'Card' : type === 'government' ? 'Government ID' : type === 'insurance' ? 'Insurance Policy' : type === 'investments' ? 'Investment' : type === 'notes' ? 'Note' : 'Item'}
           </button>
         </motion.div>
       ) : (
@@ -177,7 +193,7 @@ const CredentialsSection = ({ type, title }) => {
         }}
         onSave={handleSave}
         editData={editData}
-        type={type === 'credentials' ? 'app' : type === 'emails' ? 'email' : type === 'cards' ? 'card' : type === 'banking' ? 'banking' : type === 'government' ? 'government' : type === 'insurance' ? 'insurance' : type === 'investments' ? 'investment' : type.slice(0, -1)}
+        type={FORM_TYPE[type] || type.slice(0, -1)}
       />
     </div>
   );

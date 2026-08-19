@@ -1,167 +1,172 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from './hooks/useAuth';
 import { useAutoLogout } from './hooks/useAutoLogout';
-import LoginScreen from './components/LoginScreen';
-import ProfileSelector from './components/ProfileSelector';
+import { useVaultContext } from './context/VaultContext';
+import VaultList from './components/VaultList';
+import CreateVault from './components/CreateVault';
+import UnlockScreen from './components/UnlockScreen';
+import RecoveryUnlock from './components/RecoveryUnlock';
+import RecoveryKeyScreen from './components/RecoveryKeyScreen';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import CredentialsSection from './components/CredentialsSection';
-import ThemeToggle from './components/ThemeToggle';
-import ImportExport from './components/ImportExport';
+import PeopleSection from './components/PeopleSection';
+import VitalsSection from './components/VitalsSection';
+import Settings from './components/Settings';
 import QuickActions from './components/QuickActions';
-import EmergencyAccess from './components/EmergencyAccess';
 import OfflineIndicator from './components/OfflineIndicator';
-import BiometricAuth from './components/BiometricAuth';
-import SecureSharing from './components/SecureSharing';
-import PWAInstaller from './components/PWAInstaller';
-import LocalSync from './components/LocalSync';
-import SharedProfile from './components/SharedProfile';
-import DataExporter from './components/DataExporter';
+import AmbientBackground from './components/AmbientBackground';
+import { storage } from './utils/storage';
+import { useI18n } from './context/I18nContext';
 
 function App() {
-  const { isAuthenticated, isLoading, login, logout, currentProfile, showProfileSelector, selectProfile } = useAuth();
+  const vault = useVaultContext();
+  const { t } = useI18n();
   const [activeSection, setActiveSection] = useState('dashboard');
-  
-  useAutoLogout(logout, 2);
+  const autoLockMinutes = vault.unlocked ? storage.get('settings')?.autoLockMinutes || 2 : 2;
+  const secondsLeft = useAutoLogout(
+    vault.lock,
+    autoLockMinutes,
+    vault.unlocked && vault.phase === 'unlocked'
+  );
 
-  if (isLoading) {
+  if (!globalThis.isSecureContext || !globalThis.crypto?.subtle) {
     return (
-      <div className="min-h-screen bg-dark-900 flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full"
-        />
-      </div>
+      <AmbientBackground>
+        <div className="min-h-screen flex items-center justify-center p-6 text-center text-white">
+          <div className="max-w-md space-y-3 glass-panel rounded-3xl p-8">
+            <h1 className="font-display text-2xl">Secure context required</h1>
+            <p className="text-white/50">Open this vault on localhost or HTTPS so encryption can run in the browser.</p>
+          </div>
+        </div>
+      </AmbientBackground>
     );
   }
 
-  if (showProfileSelector) {
-    return <ProfileSelector onSelectProfile={selectProfile} />;
+  if (vault.phase === 'loading') {
+    return (
+      <AmbientBackground>
+        <div className="min-h-screen flex items-center justify-center">
+          <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }} className="w-8 h-8 border-2 border-cyan-300 border-t-transparent rounded-full" />
+        </div>
+      </AmbientBackground>
+    );
   }
 
-  if (!isAuthenticated) {
-    return <LoginScreen onLogin={login} />;
+  if (vault.phase === 'list') {
+    return (
+      <AmbientBackground>
+        <VaultList vaults={vault.vaults} onSelect={vault.selectVault} onCreate={vault.startCreate} onImport={vault.importEncryptedBackup} />
+      </AmbientBackground>
+    );
+  }
+
+  if (vault.phase === 'create') {
+    return (
+      <AmbientBackground>
+        <CreateVault onCreate={vault.handleCreate} onBack={vault.backToList} busy={vault.busy} error={vault.error} />
+      </AmbientBackground>
+    );
+  }
+
+  if (vault.phase === 'unlock') {
+    return (
+      <AmbientBackground>
+        <UnlockScreen vault={vault.selectedVault} onUnlock={vault.handleUnlock} onBack={vault.backToList} onRecovery={vault.startRecovery} busy={vault.busy} error={vault.error} />
+      </AmbientBackground>
+    );
+  }
+
+  if (vault.phase === 'recovery') {
+    return (
+      <AmbientBackground>
+        <RecoveryUnlock vault={vault.selectedVault} onReset={vault.handleRecoveryReset} onBack={() => vault.selectVault(vault.selectedId)} busy={vault.busy} error={vault.error} />
+      </AmbientBackground>
+    );
+  }
+
+  if (vault.phase === 'recovery-shown') {
+    return (
+      <AmbientBackground>
+        <RecoveryKeyScreen recoveryKey={vault.recoveryKey} onConfirm={vault.confirmRecoverySaved} />
+      </AmbientBackground>
+    );
   }
 
   const renderContent = () => {
     switch (activeSection) {
       case 'dashboard':
         return <Dashboard />;
+      case 'people':
+        return <PeopleSection />;
+      case 'vitals':
+        return <VitalsSection />;
+      case 'vehicles':
+        return <CredentialsSection type="vehicles" title={t('nav.vehicles')} />;
+      case 'properties':
+        return <CredentialsSection type="properties" title={t('nav.properties')} />;
       case 'credentials':
-        return <CredentialsSection type="credentials" title="Credentials" />;
+        return <CredentialsSection type="credentials" title={t('nav.credentials')} />;
       case 'emails':
-        return <CredentialsSection type="emails" title="Email Accounts" />;
+        return <CredentialsSection type="emails" title={t('nav.emails')} />;
       case 'banking':
-        return <CredentialsSection type="banking" title="Banking" />;
+        return <CredentialsSection type="banking" title={t('nav.banking')} />;
       case 'cards':
-        return <CredentialsSection type="cards" title="Cards" />;
+        return <CredentialsSection type="cards" title={t('nav.cards')} />;
       case 'government':
-        return <CredentialsSection type="government" title="Government IDs" />;
+        return <CredentialsSection type="government" title={t('nav.government')} />;
       case 'insurance':
-        return <CredentialsSection type="insurance" title="Insurance" />;
+        return <CredentialsSection type="insurance" title={t('nav.insurance')} />;
       case 'investments':
-        return <CredentialsSection type="investments" title="Investments" />;
+        return <CredentialsSection type="investments" title={t('nav.investments')} />;
+      case 'notes':
+        return <CredentialsSection type="notes" title={t('nav.notes')} />;
       case 'settings':
-        return (
-          <div className="p-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="glass-dark rounded-2xl p-6"
-            >
-              <h1 className="text-3xl font-bold text-white mb-6">Settings</h1>
-              <div className="space-y-6">
-                <div className="glass-dark rounded-xl p-4">
-                  <h3 className="text-lg font-semibold text-white mb-2">Simple Offline Mode</h3>
-                  <p className="text-gray-400 text-sm mb-3">Your data is always saved locally on this device</p>
-                  <button
-                    onClick={() => {
-                      // Cache current page
-                      const html = document.documentElement.outerHTML;
-                      localStorage.setItem('vault_cached_page', html);
-                      alert('App cached! You can now use it offline.');
-                    }}
-                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Cache App for Offline Use
-                  </button>
-                  <p className="text-xs text-gray-500 mt-2">Tap this button, then add to home screen</p>
-                </div>
-                <PWAInstaller />
-                <SharedProfile />
-                <LocalSync />
-                <ThemeToggle />
-                <DataExporter />
-                <ImportExport />
-                <EmergencyAccess />
-                <BiometricAuth onAuth={() => {}} />
-                <SecureSharing />
-                <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
-                  <div>
-                    <h3 className="text-white font-medium">Auto-lock</h3>
-                    <p className="text-gray-400 text-sm">Lock vault after 2 minutes of inactivity</p>
-                  </div>
-                  <div className="w-12 h-6 bg-primary-600 rounded-full flex items-center justify-end px-1">
-                    <div className="w-4 h-4 bg-white rounded-full" />
-                  </div>
-                </div>
-                <button className="w-full p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 hover:bg-red-500/20 transition-colors">
-                  Clear All Data
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        );
+        return <Settings />;
       default:
         return <Dashboard />;
     }
   };
 
   const handleQuickAction = (actionId) => {
-    switch (actionId) {
-      case 'add-credential':
-        setActiveSection('credentials');
-        break;
-      case 'search':
-        // Focus search input
-        break;
-      case 'export':
-        setActiveSection('settings');
-        break;
-      case 'security-check':
-        setActiveSection('dashboard');
-        break;
-    }
+    if (actionId === 'add-credential') setActiveSection('credentials');
+    if (actionId === 'search') setActiveSection('credentials');
+    if (actionId === 'export') setActiveSection('settings');
+    if (actionId === 'security-check') setActiveSection('dashboard');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 flex">
-      <OfflineIndicator />
-      <Sidebar 
-        activeSection={activeSection} 
-        setActiveSection={setActiveSection}
-        onLogout={logout}
-      />
-      
-      <main className="flex-1 overflow-y-auto md:ml-0 ml-0">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeSection}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-            className="min-h-full"
-          >
-            {renderContent()}
-          </motion.div>
-        </AnimatePresence>
-      </main>
-      
-      <QuickActions onAction={handleQuickAction} />
-    </div>
+    <AmbientBackground>
+      <div className="min-h-screen flex">
+        <OfflineIndicator />
+        {secondsLeft !== null && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-amber-300 text-dark-900 px-4 py-2 rounded-full text-sm font-medium">
+            Locking in {secondsLeft}s
+          </div>
+        )}
+        <Sidebar
+          activeSection={activeSection}
+          setActiveSection={setActiveSection}
+          onLock={vault.lock}
+          vaultName={vault.meta?.name}
+        />
+        <main className="flex-1 overflow-y-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeSection}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="min-h-full"
+            >
+              {renderContent()}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+        <QuickActions onAction={handleQuickAction} />
+      </div>
+    </AmbientBackground>
   );
 }
 

@@ -10,6 +10,7 @@ export default {
       fontFamily: {
         'inter': ['Inter', 'sans-serif'],
         'sf': ['SF Pro Display', 'system-ui', 'sans-serif'],
+        display: ['Iowan Old Style', 'Palatino Linotype', 'Palatino', 'Georgia', 'serif'],
       },
       colors: {
         primary: {

@@ -6,7 +6,7 @@ const PasswordStrengthMeter = ({ password }) => {
     if (!pwd) return { score: 0, label: '', color: '' };
     
     let score = 0;
-    if (pwd.length >= 8) score++;
+    if (pwd.length >= 10) score++;
     if (/[a-z]/.test(pwd)) score++;
     if (/[A-Z]/.test(pwd)) score++;
     if (/[0-9]/.test(pwd)) score++;

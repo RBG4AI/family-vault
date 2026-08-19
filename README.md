@@ -1,117 +1,61 @@
-# Vault - Premium Credential Manager
+# Family Vault
 
-A super-premium, Apple/Samsung/CRED-style personal credential and financial management website built with React, TailwindCSS, and Framer Motion.
+A local-only encrypted vault for a household. Install it on a computer or phone, store logins, bank details, IDs, and notes, and keep the data on that device.
 
-## Features
+No account. No cloud. The master password is never written to disk.
 
-### 🔐 Security
-- Master password authentication
-- Local data storage (IndexedDB/localStorage)
-- Session-based access control
-- Copy-to-clipboard for sensitive data
-- Hide/show password toggles
+## Security model
 
-### 💎 Premium UI/UX
-- Ultra-modern dark mode design
-- Glassmorphism effects and gradients
-- Smooth animations and micro-interactions
-- Elegant typography (Inter font)
-- Responsive grid/card layouts
+- Each vault is encrypted with **AES-256-GCM**
+- The encryption key is derived with **PBKDF2-SHA-256** (400,000 iterations) from the master password
+- A random data key is wrapped by that password; the password itself is not stored
+- A **recovery key** can unwrap the same data key if the password is lost
+- Unlocked keys live in memory only and are wiped on lock, idle timeout, or hiding the app
+- Backups are the encrypted vault file. They are useless without the password or recovery key
+- Clipboard copies of secrets are cleared after 30 seconds when the browser allows it
 
-### 📊 Data Management
-- **Email Accounts**: Domain selection, recovery emails
-- **Applications & Websites**: Login credentials with notes
-- **Internet Banking**: Bank details, customer IDs, transaction PINs
-- **Government IDs**: PAN, Aadhaar, Passport, UAN, Driving License
-- **Insurance**: Health, Life/LIC, NPS with policy details
-- **Investments**: Mutual funds, stocks, demat accounts with portfolio tracking
+This is strong local encryption. It cannot protect a compromised device, a weak master password, or screenshots while a secret is revealed.
 
-### 🎯 Smart Features
-- Global search across all sections
-- Tag-based filtering and organization
-- Dashboard with charts and analytics
-- Add/Edit/Delete with floating action buttons
-- Recent activity tracking
+## Phones (HTTPS)
 
-## Tech Stack
+A phone browser will only encrypt the vault on **HTTPS**. Hosting the app on GitHub Pages publishes the **program**, not anyone’s secrets. Each phone still stores its vault in that device’s browser.
 
-- **Frontend**: React 18 + Vite
-- **Styling**: TailwindCSS with custom glassmorphism utilities
-- **Animations**: Framer Motion
-- **Charts**: Recharts
-- **Icons**: Lucide React
-- **Storage**: LocalStorage with structured data management
+Phone link (after Add to Home Screen, it works offline):
 
-## Getting Started
+**https://rbg4ai.github.io/family-vault/**
 
-1. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+Friends should:
 
-2. **Start development server**:
-   ```bash
-   npm run dev
-   ```
+1. Open that link in **Safari** (iPhone) or **Chrome** (Android)
+2. Share / browser menu → **Add to Home Screen**
+3. Open the home-screen icon next time (works offline after the first visit)
 
-3. **Build for production**:
-   ```bash
-   npm run build
-   ```
+The GitHub site is only the **program**. Vault data stays on each phone. A later publish updates the app, not anyone’s secrets.
 
-## Usage
+## Install (computer)
 
-1. **First Time Setup**: Enter any password (6+ characters) - this becomes your master password
-2. **Login**: Use your master password to access the vault
-3. **Add Data**: Use the floating "Add New" buttons in each section
-4. **Search & Filter**: Use the search bar and tag filters to find specific items
-5. **Security**: All data is stored locally on your device
-
-## Project Structure
-
-```
-src/
-├── components/          # React components
-│   ├── LoginScreen.jsx     # Master password authentication
-│   ├── Sidebar.jsx         # Navigation sidebar
-│   ├── Dashboard.jsx       # Analytics dashboard
-│   ├── CredentialCard.jsx  # Individual credential cards
-│   ├── AddCredentialModal.jsx # Add/edit modal
-│   └── CredentialsSection.jsx # Main content sections
-├── hooks/              # Custom React hooks
-│   └── useAuth.js         # Authentication logic
-├── utils/              # Utility functions
-│   └── storage.js         # Local storage management
-├── App.jsx             # Main application component
-├── main.jsx           # React entry point
-└── index.css          # Global styles and utilities
+```bash
+npm install
+npm run dev
 ```
 
-## Security Notes
+Or one file, no install: `npm run standalone` then open `FamilyVault.html` in Chrome or Safari.
 
-- Data is stored locally in your browser
-- No data is sent to external servers
-- Master password is stored in localStorage (consider encryption for production)
-- Session expires when browser is closed
-- Ready for AES encryption implementation
+Create a **Family** vault for household data and separate **Personal** vaults if needed. Each vault has its own password.
 
-## Customization
+## Using it
 
-The app uses a modular design with:
-- Custom Tailwind utilities for glassmorphism effects
-- Configurable color schemes in `tailwind.config.js`
-- Reusable components for different data types
-- Extensible storage system for new data categories
+1. Create a vault and write down the recovery key offline
+2. Add logins, cards, IDs, insurance, investments, and notes
+3. Export an encrypted backup onto a USB drive or trusted computer
+4. Import that backup on another family device, then unlock with the same password
 
-## Future Enhancements
+If you forget the password, use the recovery key, then set a new password.
 
-- AES encryption for sensitive data
-- Biometric authentication
-- Cloud sync capabilities
-- Import/export functionality
-- Advanced portfolio analytics
-- Mobile app version
+## Migrating from the old app
 
----
+If this device still has the previous plaintext `localStorage` vault, it appears in the list as a legacy vault. Unlock it once with the old password. The data is re-encrypted and the plaintext copy is deleted.
 
-**Built with ❤️ for premium user experience**
+## What was removed
+
+Unencrypted HTML export, Base64 “share codes”, fake LAN sync, and unfinished biometric login. Those paths leaked or pretended to protect data.

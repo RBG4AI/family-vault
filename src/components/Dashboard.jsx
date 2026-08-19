@@ -1,149 +1,120 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
-import { Key, CreditCard, Shield, TrendingUp, DollarSign } from 'lucide-react';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
+import { Key, CreditCard, Users, AlertTriangle } from 'lucide-react';
 import { storage } from '../utils/storage';
 import SecurityScore from './SecurityScore';
+import { collectRenewals } from '../utils/renewals';
+import { useI18n } from '../context/I18nContext';
 
 const Dashboard = () => {
-  const credentials = storage.get('credentials') || [];
-  const banking = storage.get('banking') || [];
-  const insurance = storage.get('insurance') || [];
-  const investments = storage.get('investments') || [];
+  const { t } = useI18n();
+  const data = storage.get() || {};
+  const people = data.people || [];
+  const credentials = data.credentials || [];
+  const banking = data.banking || [];
+  const investments = data.investments || [];
+  const renewals = collectRenewals(data, people).filter((item) => item.days <= 60);
+  const totalInvestmentValue = investments.reduce((sum, inv) => sum + (Number(inv.currentValue) || 0), 0);
 
-  const totalInvestmentValue = investments.reduce((sum, inv) => sum + (inv.currentValue || 0), 0);
-  
   const stats = [
-    {
-      title: 'Total Credentials',
-      value: credentials.length,
-      icon: Key,
-      color: 'from-blue-500 to-blue-600',
-      change: ''
-    },
-    {
-      title: 'Bank Accounts',
-      value: banking.length,
-      icon: CreditCard,
-      color: 'from-green-500 to-green-600',
-      change: ''
-    },
-    {
-      title: 'Insurance Policies',
-      value: insurance.length,
-      icon: Shield,
-      color: 'from-purple-500 to-purple-600',
-      change: ''
-    },
-    {
-      title: 'Investment Value',
-      value: totalInvestmentValue > 0 ? `₹${(totalInvestmentValue/1000).toFixed(1)}K` : '₹0',
-      icon: TrendingUp,
-      color: 'from-orange-500 to-orange-600',
-      change: ''
-    }
+    { title: t('nav.people'), value: people.length, icon: Users, tint: 'from-cyan-400 to-blue-500' },
+    { title: t('nav.credentials'), value: credentials.length, icon: Key, tint: 'from-violet-400 to-fuchsia-500' },
+    { title: t('nav.banking'), value: banking.length, icon: CreditCard, tint: 'from-emerald-400 to-teal-500' },
+    { title: t('dash.attention'), value: renewals.filter((item) => item.days <= 0).length, icon: AlertTriangle, tint: 'from-amber-400 to-orange-500' },
   ];
 
-  const pieData = [
-    { name: 'Credentials', value: credentials.length, color: '#3b82f6' },
-    { name: 'Banking', value: banking.length, color: '#10b981' },
-    { name: 'Insurance', value: insurance.length, color: '#8b5cf6' },
-    { name: 'Investments', value: investments.length, color: '#f59e0b' }
-  ];
-
-  const barData = investments.length > 0 ? investments.map(inv => ({
-    name: inv.name?.substring(0, 8) || 'Investment',
-    value: inv.currentValue || 0
-  })) : [];
+  const barData = investments.map((inv) => ({
+    name: (inv.name || 'Fund').slice(0, 8),
+    value: Number(inv.currentValue) || 0,
+  }));
 
   return (
-    <div className="p-4 md:p-6 space-y-4 md:space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
-      >
-        <div className="mt-12 md:mt-0">
-          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Dashboard</h1>
-          <p className="text-gray-400">Welcome back to your secure vault</p>
-        </div>
-        <div className="text-right">
-          <p className="text-sm text-gray-400">Last login</p>
-          <p className="text-white font-medium">{new Date().toLocaleDateString()}</p>
-        </div>
-      </motion.div>
+    <div className="p-4 md:p-8 mt-12 md:mt-0 space-y-6">
+      <div>
+        <p className="text-xs tracking-[0.22em] uppercase text-cyan-300/70 mb-2">Family Vault</p>
+        <h1 className="font-display text-3xl md:text-5xl text-white leading-tight">{t('dash.title')}</h1>
+        <p className="text-white/45 mt-3 max-w-xl">{t('dash.subtitle')}</p>
+      </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
             <motion.div
               key={stat.title}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="glass-dark rounded-xl md:rounded-2xl p-3 md:p-6 hover:bg-white/5 transition-all duration-300"
+              transition={{ delay: index * 0.06 }}
+              className="glass-panel rounded-3xl p-4 md:p-5"
             >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center`}>
-                  <Icon className="w-4 h-4 md:w-6 md:h-6 text-white" />
-                </div>
-                {stat.change && <span className="text-green-400 text-sm font-medium">{stat.change}</span>}
+              <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${stat.tint} flex items-center justify-center mb-4`}>
+                <Icon className="w-5 h-5 text-white" />
               </div>
-              <h3 className="text-lg md:text-2xl font-bold text-white mb-1">{stat.value}</h3>
-              <p className="text-gray-400 text-xs md:text-sm">{stat.title}</p>
+              <p className="font-display text-2xl text-white">{stat.value}</p>
+              <p className="text-white/40 text-xs mt-1">{stat.title}</p>
             </motion.div>
           );
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-        <SecurityScore />
-
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.5 }}
-          className="glass-dark rounded-2xl p-6"
-        >
-          <h3 className="text-xl font-semibold text-white mb-4">Investment Growth</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={barData}>
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af' }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af' }} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#1e293b', 
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '8px',
-                  color: '#fff'
-                }} 
-              />
-              <Bar dataKey="value" fill="url(#gradient)" radius={[4, 4, 0, 0]} />
-              <defs>
-                <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3b82f6" />
-                  <stop offset="100%" stopColor="#1d4ed8" />
-                </linearGradient>
-              </defs>
-            </BarChart>
-          </ResponsiveContainer>
-        </motion.div>
+      <div className="glass-panel rounded-3xl p-5 md:p-6">
+        <h2 className="text-white font-medium mb-4">{t('dash.attention')}</h2>
+        {renewals.length === 0 ? (
+          <p className="text-white/40 text-sm">{t('dash.noAttention')}</p>
+        ) : (
+          <div className="space-y-2">
+            {renewals.slice(0, 6).map((item) => (
+              <div key={item.id} className="flex items-center justify-between bg-white/5 rounded-2xl px-4 py-3">
+                <div>
+                  <p className="text-white text-sm">{item.title}</p>
+                  <p className="text-white/40 text-xs">{item.subtitle} · {item.category}</p>
+                </div>
+                <span className={`text-xs font-medium ${item.days < 0 ? 'text-rose-300' : item.days <= 14 ? 'text-amber-300' : 'text-cyan-300'}`}>
+                  {item.days < 0 ? `${Math.abs(item.days)}d overdue` : `${item.days}d`}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {(credentials.length > 0 || banking.length > 0 || insurance.length > 0 || investments.length > 0) && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="glass-dark rounded-2xl p-6"
-        >
-          <h3 className="text-xl font-semibold text-white mb-4">Recent Activity</h3>
-          <div className="text-center py-8">
-            <p className="text-gray-400">Activity tracking will appear here as you use the app</p>
+      {people.length > 0 && (
+        <div className="glass-panel rounded-3xl p-5 md:p-6">
+          <h2 className="text-white font-medium mb-4">{t('dash.family')}</h2>
+          <div className="flex flex-wrap gap-3">
+            {people.map((person) => (
+              <div key={person.id} className="px-4 py-3 rounded-2xl bg-white/5 text-sm text-white/80">
+                {person.name}
+                <span className="text-white/35 ml-2">{person.relation || ''}</span>
+              </div>
+            ))}
           </div>
-        </motion.div>
+        </div>
       )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <SecurityScore />
+        <div className="glass-panel rounded-3xl p-6">
+          <h3 className="text-white font-medium mb-4">{t('nav.investments')}</h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={barData.length ? barData : [{ name: '—', value: 0 }]}>
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
+              <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, color: '#fff' }} />
+              <Bar dataKey="value" fill="#67e8f9" radius={[8, 8, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+          {totalInvestmentValue > 0 && (
+            <p className="text-white/40 text-sm mt-3">₹{(totalInvestmentValue / 1000).toFixed(1)}K recorded</p>
+          )}
+        </div>
+      </div>
+
+      <div className="glass-panel rounded-3xl p-6">
+        <h3 className="text-white font-medium mb-2">{t('dash.encrypted')}</h3>
+        <p className="text-white/45 text-sm">{t('dash.encryptedBody')}</p>
+      </div>
     </div>
   );
 };
