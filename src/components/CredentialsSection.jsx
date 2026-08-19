@@ -37,6 +37,7 @@ const SECRET_SEARCH_KEYS = new Set([
   'transactionPin',
   'mobilePin',
   'content',
+  'twoFactorCodes',
 ]);
 
 const searchableText = (item) =>

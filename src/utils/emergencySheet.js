@@ -46,7 +46,7 @@ export const buildEmergencySheet = (data = {}) => {
       title: text(item.bankName) || 'Bank',
       holder: '',
       number: text(item.accountNumber),
-      extra: text(item.ifscCode),
+      extra: [text(item.ifscCode), text(item.nominee) && `Nominee ${item.nominee}`].filter(Boolean).join(' · '),
     })),
     cards: rowsFor(data.cards, (item) => ({
       title: text(item.cardType) || 'Card',
@@ -70,7 +70,7 @@ export const buildEmergencySheet = (data = {}) => {
       title: text(item.name) || text(item.investmentType) || 'Investment',
       holder: text(item.platform),
       number: text(item.accountNumber),
-      extra: [text(item.investmentType), text(item.maturityDate)].filter(Boolean).join(' · '),
+      extra: [text(item.investmentType), text(item.nominee) && `Nominee ${item.nominee}`, text(item.maturityDate)].filter(Boolean).join(' · '),
     })),
   };
 };

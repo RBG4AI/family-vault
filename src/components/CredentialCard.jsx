@@ -26,7 +26,7 @@ const titleFor = (item) =>
   item.registrationNumber ||
   item.policyNumber;
 
-const SECRET_KEYS = new Set(['password', 'cvv', 'pin', 'netBankingPassword', 'transactionPin', 'mobilePin']);
+const SECRET_KEYS = new Set(['password', 'cvv', 'pin', 'netBankingPassword', 'transactionPin', 'mobilePin', 'twoFactorCodes']);
 const LAST4_KEYS = new Set(['accountNumber', 'cardNumber', 'documentNumber', 'policyNumber']);
 
 const fieldsFor = (item) =>
@@ -35,8 +35,10 @@ const fieldsFor = (item) =>
     ['emailAddress', item.emailAddress],
     ['recoveryEmail', item.recoveryEmail],
     ['password', item.password],
+    ['twoFactorCodes', item.twoFactorCodes],
     ['accountNumber', item.accountNumber],
     ['ifscCode', item.ifscCode],
+    ['nominee', item.nominee],
     ['customerId', item.customerId],
     ['netBankingUser', item.netBankingUser],
     ['cardNumber', item.cardNumber],
@@ -64,7 +66,7 @@ const fieldsFor = (item) =>
     ['vehicleType', item.vehicleType],
     ['propertyType', item.propertyType],
     ['content', item.content || item.notes],
-  ].filter(([, value]) => value !== undefined && value !== null && value !== '').slice(0, 8);
+  ].filter(([, value]) => value !== undefined && value !== null && value !== '' && value !== false).slice(0, 12);
 
 const CredentialCard = ({ credential, onEdit, onDelete, highlighted }) => {
   const [revealed, setRevealed] = useState({});

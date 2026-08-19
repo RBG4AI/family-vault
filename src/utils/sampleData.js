@@ -113,6 +113,8 @@ const buildSample = () => {
       username: 'asha.sample@example.com',
       password: 'SamplePass1!',
       notes: 'Demo login',
+      twoFactorEnabled: true,
+      twoFactorCodes: 'SAMPLE-AA11\nSAMPLE-BB22',
     }),
     stamp('login-netflix', {
       personId: PERSON.rohan,
@@ -144,6 +146,7 @@ const buildSample = () => {
       recoveryEmail: 'asha.backup.sample@example.com',
       recoveryPhone: '9876543210',
       twoFactorEnabled: true,
+      twoFactorCodes: 'MAIL-SAMPLE-11\nMAIL-SAMPLE-22',
     }),
     stamp('email-rohan', {
       personId: PERSON.rohan,
@@ -172,6 +175,7 @@ const buildSample = () => {
       netBankingPassword: 'SampleBank1!',
       transactionPin: '2468',
       mobilePin: '1357',
+      nominee: 'Rohan Sharma',
     }),
     stamp('bank-sbi', {
       personId: PERSON.rohan,
@@ -343,6 +347,7 @@ const buildSample = () => {
       amountInvested: 180000,
       currentValue: 214500,
       purchaseDate: '2022-01-10',
+      nominee: 'Rohan Sharma',
     }),
     stamp('inv-fd', {
       personId: PERSON.rohan,
@@ -354,6 +359,7 @@ const buildSample = () => {
       currentValue: 5450,
       purchaseDate: '2025-04-01',
       maturityDate: shiftDays(45),
+      nominee: 'Asha Sharma',
     }),
     stamp('inv-gold', {
       personId: PERSON.meera,

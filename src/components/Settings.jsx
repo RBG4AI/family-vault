@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, Upload, KeyRound, Shield, Trash2, AlertTriangle, Sparkles } from 'lucide-react';
+import { Download, Upload, KeyRound, Shield, Trash2, AlertTriangle, Sparkles, Printer } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import PWAInstaller from './PWAInstaller';
 import RecoveryKeyScreen from './RecoveryKeyScreen';
@@ -16,6 +16,8 @@ import { loadSampleHousehold, removeSampleHousehold } from '../utils/sampleData'
 import StorageDisclaimer from './StorageDisclaimer';
 import { downloadVaultBackup } from '../utils/exportBackup';
 import { backupAgeDays, getLastBackupAt, isTesterTools, setTesterTools } from '../utils/devicePrefs';
+import AccessPrint from './AccessPrint';
+import { printSection } from '../utils/printSection';
 
 const Settings = () => {
   const vault = useVaultContext();
@@ -168,7 +170,8 @@ const Settings = () => {
   }
 
   return (
-    <div className="p-4 md:p-6 mt-16">
+    <>
+    <div className="p-4 md:p-6 mt-16 print-hide">
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-3xl">
         <div>
           <p className="text-xs tracking-[0.22em] uppercase text-cyan-300/70 mb-2">{t('settings.eyebrow')}</p>
@@ -299,6 +302,9 @@ const Settings = () => {
               <Upload size={16} /> {t('settings.restore')}
               <input type="file" accept="application/json,.json" className="sr-only" onChange={handleImport} />
             </label>
+            <button type="button" onClick={() => printSection('access')} className="flex items-center gap-2 px-4 py-2 bg-white/10 text-white rounded-xl">
+              <Printer size={16} /> {t('access.print')}
+            </button>
           </div>
           {importMessage && <p className="text-sm text-gray-300">{importMessage}</p>}
         </section>
@@ -324,6 +330,8 @@ const Settings = () => {
         </section>
       </motion.div>
     </div>
+    <AccessPrint />
+    </>
   );
 };
 

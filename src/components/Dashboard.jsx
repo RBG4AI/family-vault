@@ -11,6 +11,8 @@ import { useI18n } from '../context/I18nContext';
 import { useVaultContext } from '../context/VaultContext';
 import StorageDisclaimer from './StorageDisclaimer';
 import EmergencyPrint from './EmergencyPrint';
+import AccessPrint from './AccessPrint';
+import { printSection } from '../utils/printSection';
 
 const Dashboard = ({ onNavigate }) => {
   const { t } = useI18n();
@@ -151,8 +153,11 @@ const Dashboard = ({ onNavigate }) => {
       )}
 
       <div className="flex flex-wrap gap-3">
-        <button type="button" onClick={() => window.print()} className="px-4 py-2 bg-white/10 text-white rounded-xl flex items-center gap-2">
+        <button type="button" onClick={() => printSection('emergency')} className="px-4 py-2 bg-white/10 text-white rounded-xl flex items-center gap-2">
           <Printer size={16} /> {t('sheet.print')}
+        </button>
+        <button type="button" onClick={() => printSection('access')} className="px-4 py-2 bg-white/10 text-white rounded-xl flex items-center gap-2">
+          <Printer size={16} /> {t('access.print')}
         </button>
         <button type="button" onClick={() => downloadRenewalsIcs(collectRenewals(data, people))} className="px-4 py-2 bg-white/10 text-white rounded-xl flex items-center gap-2">
           <Calendar size={16} /> {t('sheet.calendar')}
@@ -187,6 +192,7 @@ const Dashboard = ({ onNavigate }) => {
       </div>
     </div>
     <EmergencyPrint data={data} />
+    <AccessPrint />
     </>
   );
 };

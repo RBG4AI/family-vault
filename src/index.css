@@ -156,9 +156,15 @@ html.light [class*="bg-gradient-to"] {
   .print-hide {
     display: none !important;
   }
-  #emergency-print {
-    display: block !important;
+  #emergency-print,
+  #access-print {
+    display: none !important;
     color: #111 !important;
     background: #fff !important;
+  }
+  html:not([data-print]) #emergency-print,
+  html[data-print="emergency"] #emergency-print,
+  html[data-print="access"] #access-print {
+    display: block !important;
   }
 }

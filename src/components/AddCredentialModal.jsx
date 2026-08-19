@@ -40,12 +40,15 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
           { key: 'recoveryEmail', label: 'Recovery Email', type: 'email' },
           { key: 'recoveryPhone', label: 'Recovery Phone', type: 'tel' },
           { key: 'twoFactorEnabled', label: '2FA Enabled', type: 'checkbox' },
+          { key: 'twoFactorCodes', label: '2FA backup codes', type: 'textarea' },
         ];
       case 'app':
         return [
           { key: 'appName', label: 'App/Website Name', type: 'text', required: true },
           { key: 'username', label: 'Username', type: 'text', required: true },
           { key: 'password', label: 'Password', type: 'password', required: true },
+          { key: 'twoFactorEnabled', label: '2FA Enabled', type: 'checkbox' },
+          { key: 'twoFactorCodes', label: '2FA backup codes', type: 'textarea' },
           { key: 'notes', label: 'Notes', type: 'textarea' },
         ];
       case 'banking':
@@ -53,6 +56,7 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
           { key: 'bankName', label: 'Bank Name', type: 'text', required: true },
           { key: 'accountNumber', label: 'Account Number', type: 'text', required: true },
           { key: 'ifscCode', label: 'IFSC Code', type: 'text', required: true },
+          { key: 'nominee', label: 'Nominee Name', type: 'text' },
           { key: 'customerId', label: 'Customer ID', type: 'text', required: true },
           { key: 'netBankingUser', label: 'Net Banking Username', type: 'text', required: true },
           { key: 'netBankingPassword', label: 'Net Banking Password', type: 'password', required: true },
@@ -89,6 +93,7 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
           { key: 'name', label: 'Investment Name', type: 'text', required: true },
           { key: 'platform', label: 'Platform/Broker', type: 'text' },
           { key: 'accountNumber', label: 'Account/Folio Number', type: 'text' },
+          { key: 'nominee', label: 'Nominee Name', type: 'text' },
           { key: 'amountInvested', label: 'Amount Invested', type: 'number' },
           { key: 'currentValue', label: 'Current Value', type: 'number' },
           { key: 'purchaseDate', label: 'Purchase Date', type: 'date' },

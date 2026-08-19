@@ -8,6 +8,7 @@ const SECRET_KEYS = new Set([
   'transactionPin',
   'mobilePin',
   'content',
+  'twoFactorCodes',
 ]);
 
 const BUCKETS = [
