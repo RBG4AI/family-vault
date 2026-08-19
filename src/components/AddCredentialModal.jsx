@@ -119,7 +119,7 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
           { key: 'birthday', label: 'Birthday', type: 'date' },
           { key: 'phone', label: 'Phone', type: 'tel' },
           { key: 'email', label: 'Email', type: 'email' },
-          { key: 'bloodGroup', label: 'Blood group', type: 'text' },
+          { key: 'bloodGroup', label: 'Blood group', type: 'select', options: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] },
           { key: 'emergencyPhone', label: 'Emergency phone', type: 'tel' },
           { key: 'doctorName', label: 'Doctor', type: 'text' },
           { key: 'lockerHint', label: 'Locker / emergency note', type: 'textarea' },

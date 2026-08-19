@@ -164,6 +164,7 @@ export const TRANSLATIONS = {
       untitled: 'Untitled',
       storedSecurely: 'Stored securely in this vault',
       saveFailed: 'Could not save. Check this device’s storage and try again.',
+      close: 'Close',
     },
     modal: {
       add: {
@@ -429,6 +430,14 @@ export const TRANSLATIONS = {
       Plot: 'Plot',
       Apartment: 'Apartment',
       Shop: 'Shop',
+      'A+': 'A+',
+      'A-': 'A−',
+      'B+': 'B+',
+      'B-': 'B−',
+      'AB+': 'AB+',
+      'AB-': 'AB−',
+      'O+': 'O+',
+      'O-': 'O−',
     },
   },
   hi: {
@@ -596,6 +605,7 @@ export const TRANSLATIONS = {
       untitled: 'बिना शीर्षक',
       storedSecurely: 'इस वॉल्ट में सुरक्षित रखा गया',
       saveFailed: 'सेव नहीं हो सका। इस डिवाइस का स्टोरेज जाँचें और फिर कोशिश करें।',
+      close: 'बंद करें',
     },
     modal: {
       add: {
@@ -860,6 +870,14 @@ export const TRANSLATIONS = {
       Plot: 'प्लॉट',
       Apartment: 'अपार्टमेंट',
       Shop: 'दुकान',
+      'A+': 'A+',
+      'A-': 'A−',
+      'B+': 'B+',
+      'B-': 'B−',
+      'AB+': 'AB+',
+      'AB-': 'AB−',
+      'O+': 'O+',
+      'O-': 'O−',
     },
   },
 };

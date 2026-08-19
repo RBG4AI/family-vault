@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Users } from 'lucide-react';
+import { Plus, Users, X } from 'lucide-react';
 import { storage } from '../utils/storage';
 import AddCredentialModal from './AddCredentialModal';
 import { useI18n } from '../context/I18nContext';
@@ -77,6 +77,20 @@ const PeopleSection = () => {
     setPeople((current) => [...current]);
   };
 
+  const closePerson = () => {
+    setSelected(null);
+    setConfirmDelete(false);
+  };
+
+  useEffect(() => {
+    if (!selected) return undefined;
+    const onKey = (event) => {
+      if (event.key === 'Escape') closePerson();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [selected]);
+
   return (
     <div className="p-4 md:p-8 mt-16">
       <div className="flex items-end justify-between mb-8">
@@ -122,10 +136,10 @@ const PeopleSection = () => {
 
       {selectedPerson && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4">
-          <button className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setSelected(null); setConfirmDelete(false); }} />
+          <button type="button" className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closePerson} aria-label={t('common.close')} />
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative glass-panel rounded-3xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
-            <div className="flex items-start justify-between mb-4">
-              <div>
+            <div className="flex items-start justify-between mb-4 gap-3">
+              <div className="min-w-0">
                 <h2 className="text-2xl font-display text-white">{selectedPerson.name}</h2>
                 {selectedPerson.relation ? <p className="text-white/50 text-sm">{t(`option.${selectedPerson.relation}`)}</p> : null}
                 {(selectedPerson.bloodGroup || selectedPerson.emergencyPhone || selectedPerson.doctorName) && (
@@ -139,7 +153,17 @@ const PeopleSection = () => {
                 )}
                 {selectedPerson.lockerHint ? <p className="text-white/40 text-sm mt-1">{selectedPerson.lockerHint}</p> : null}
               </div>
-              <button className="text-sm text-cyan-300" onClick={() => { setEdit(selectedPerson); setOpen(true); }}>{t('common.edit')}</button>
+              <div className="flex items-center gap-1 shrink-0">
+                <button type="button" className="text-sm text-cyan-300 px-2 py-1" onClick={() => { setEdit(selectedPerson); setOpen(true); }}>{t('common.edit')}</button>
+                <button
+                  type="button"
+                  className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg"
+                  onClick={closePerson}
+                  aria-label={t('common.close')}
+                >
+                  <X size={20} />
+                </button>
+              </div>
             </div>
             <p className="text-white/40 text-sm mb-3">{t('people.linkedCount', { count: linked.length })}</p>
             <div className="flex flex-wrap gap-2 mb-4">
