@@ -29,6 +29,7 @@ export const TRANSLATIONS = {
       vault: 'Vault',
       openMenu: 'Open menu',
       closeMenu: 'Close menu',
+      goHome: 'Go to Home',
     },
     dash: {
       title: 'Home',
@@ -430,6 +431,7 @@ export const TRANSLATIONS = {
       vault: 'वॉल्ट',
       openMenu: 'मेनू खोलें',
       closeMenu: 'मेनू बंद करें',
+      goHome: 'होम पर जाएँ',
     },
     dash: {
       title: 'होम',

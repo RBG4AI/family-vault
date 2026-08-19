@@ -144,7 +144,7 @@ const CredentialsSection = ({ type, title }) => {
   const isFilteredEmpty = !isEmptyVault && filteredItems.length === 0;
 
   return (
-    <div className="p-4 md:p-6 mt-12 md:mt-0">
+    <div className="p-4 md:p-6 mt-16">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

@@ -59,7 +59,7 @@ const PeopleSection = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 mt-12 md:mt-0">
+    <div className="p-4 md:p-8 mt-16">
       <div className="flex items-end justify-between mb-8">
         <div>
           <p className="text-xs tracking-[0.2em] uppercase text-cyan-300/80 mb-2">{t('nav.family')}</p>

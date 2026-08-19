@@ -29,7 +29,7 @@ const Dashboard = () => {
   }));
 
   return (
-    <div className="p-4 md:p-8 mt-12 md:mt-0 space-y-6">
+    <div className="p-4 md:p-8 mt-16 space-y-6">
       <div>
         <p className="text-xs tracking-[0.22em] uppercase text-cyan-300/70 mb-2">{t('dash.eyebrow')}</p>
         <h1 className="font-display text-3xl md:text-5xl text-white leading-tight">{t('dash.title')}</h1>

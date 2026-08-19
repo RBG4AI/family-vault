@@ -151,7 +151,7 @@ const Settings = () => {
   }
 
   return (
-    <div className="p-4 md:p-6 mt-12 md:mt-0">
+    <div className="p-4 md:p-6 mt-16">
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-3xl">
         <div>
           <p className="text-xs tracking-[0.22em] uppercase text-cyan-300/70 mb-2">{t('settings.eyebrow')}</p>

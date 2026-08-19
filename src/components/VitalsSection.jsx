@@ -41,7 +41,7 @@ const VitalsSection = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 mt-12 md:mt-0 space-y-6">
+    <div className="p-4 md:p-8 mt-16 space-y-6">
       <div className="flex items-end justify-between">
         <div>
           <p className="text-xs tracking-[0.2em] uppercase text-rose-300/80 mb-2">{t('vitals.health')}</p>

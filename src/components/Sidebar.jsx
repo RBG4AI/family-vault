@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  LayoutDashboard,
   Key,
   CreditCard,
   FileText,
@@ -16,6 +15,7 @@ import {
   Users,
   Car,
   Home,
+  Building2,
   HeartPulse,
 } from 'lucide-react';
 import { useI18n } from '../context/I18nContext';
@@ -39,18 +39,19 @@ const Sidebar = ({ activeSection, setActiveSection, onLock, vaultName }) => {
     return () => mq.removeEventListener('change', apply);
   }, [isOpen]);
 
+  const goHome = () => {
+    setActiveSection('dashboard');
+    closeSidebar();
+  };
+
   const groups = [
-    {
-      label: t('nav.dashboard'),
-      items: [{ id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard }],
-    },
     {
       label: t('nav.family'),
       items: [
         { id: 'people', label: t('nav.people'), icon: Users },
         { id: 'vitals', label: t('nav.vitals'), icon: HeartPulse },
         { id: 'vehicles', label: t('nav.vehicles'), icon: Car },
-        { id: 'properties', label: t('nav.properties'), icon: Home },
+        { id: 'properties', label: t('nav.properties'), icon: Building2 },
       ],
     },
     {
@@ -82,6 +83,18 @@ const Sidebar = ({ activeSection, setActiveSection, onLock, vaultName }) => {
         <Menu className="w-6 h-6" />
       </button>
 
+      <button
+        type="button"
+        onClick={goHome}
+        className={`fixed top-4 right-4 z-[60] flex items-center gap-2 p-3 md:px-4 glass-panel rounded-2xl text-white ${
+          isOpen ? 'hidden' : ''
+        } ${activeSection === 'dashboard' ? 'bg-white/15' : ''}`}
+        aria-label={t('nav.goHome')}
+      >
+        <Home className="w-5 h-5" />
+        <span className="hidden md:inline text-sm font-medium">{t('nav.dashboard')}</span>
+      </button>
+
       {isOpen && <div className="md:hidden fixed inset-0 bg-black/50 z-40" onClick={closeSidebar} />}
 
       <aside
@@ -106,6 +119,18 @@ const Sidebar = ({ activeSection, setActiveSection, onLock, vaultName }) => {
         </div>
 
         <nav className="flex-1 space-y-5 overflow-y-auto pr-1">
+          <button
+            type="button"
+            onClick={goHome}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
+              activeSection === 'dashboard'
+                ? 'bg-white/10 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]'
+                : 'text-white/45 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Home size={16} />
+            <span>{t('nav.dashboard')}</span>
+          </button>
           {groups.map((group) => (
             <div key={group.label}>
               <p className="px-3 mb-2 text-[10px] uppercase tracking-[0.18em] text-white/30">{group.label}</p>
