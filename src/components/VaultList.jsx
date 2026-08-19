@@ -4,6 +4,7 @@ import { Lock, Plus, Shield, Users, FileKey } from 'lucide-react';
 import LanguageSwitch from './LanguageSwitch';
 import { useI18n } from '../context/I18nContext';
 import { vaultErrorText } from '../i18n/vaultErrors';
+import StorageDisclaimer from './StorageDisclaimer';
 
 const VaultList = ({ vaults, onSelect, onCreate, onImport }) => {
   const { t } = useI18n();
@@ -37,6 +38,8 @@ const VaultList = ({ vaults, onSelect, onCreate, onImport }) => {
           <h1 className="font-display text-4xl text-white mb-2">{t('app.title')}</h1>
           <p className="text-white/45">{t('app.tagline')}</p>
         </div>
+
+        <StorageDisclaimer className="mb-6" />
 
         <div className="space-y-3">
           {vaults.map((vault) => (

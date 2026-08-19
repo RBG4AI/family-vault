@@ -5,6 +5,7 @@ import { Key, CreditCard, Users, AlertTriangle } from 'lucide-react';
 import { storage } from '../utils/storage';
 import { collectRenewals } from '../utils/renewals';
 import { useI18n } from '../context/I18nContext';
+import StorageDisclaimer from './StorageDisclaimer';
 
 const Dashboard = () => {
   const { t } = useI18n();
@@ -113,9 +114,10 @@ const Dashboard = () => {
         )}
       </div>
 
-      <div className="glass-panel rounded-3xl p-6">
-        <h3 className="text-white font-medium mb-2">{t('dash.encrypted')}</h3>
+      <div className="glass-panel rounded-3xl p-6 space-y-3">
+        <h3 className="text-white font-medium">{t('dash.encrypted')}</h3>
         <p className="text-white/45 text-sm">{t('dash.encryptedBody')}</p>
+        <StorageDisclaimer />
       </div>
     </div>
   );

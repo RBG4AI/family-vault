@@ -6,6 +6,7 @@ import { passwordScore } from '../crypto/vaultCrypto';
 import { useI18n } from '../context/I18nContext';
 import LanguageSwitch from './LanguageSwitch';
 import SecretInput from './SecretInput';
+import StorageDisclaimer from './StorageDisclaimer';
 
 const CreateVault = ({ onCreate, onBack, busy, error }) => {
   const { t } = useI18n();
@@ -53,6 +54,8 @@ const CreateVault = ({ onCreate, onBack, busy, error }) => {
           <h1 className="font-display text-3xl text-white mb-1">{t('create.title')}</h1>
           <p className="text-white/45 text-sm">{t('create.body')}</p>
         </div>
+
+        <StorageDisclaimer />
 
         <label className="block">
           <span className="text-sm text-white/70">{t('create.name')}</span>

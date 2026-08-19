@@ -13,6 +13,7 @@ import { useI18n } from '../context/I18nContext';
 import { vaultErrorText } from '../i18n/vaultErrors';
 import SecretInput from './SecretInput';
 import { loadSampleHousehold, removeSampleHousehold } from '../utils/sampleData';
+import StorageDisclaimer from './StorageDisclaimer';
 
 const Settings = () => {
   const vault = useVaultContext();
@@ -158,6 +159,8 @@ const Settings = () => {
           <h1 className="font-display text-3xl md:text-4xl text-white mb-2">{t('nav.settings')}</h1>
           <p className="text-white/45">{t('settings.intro')}</p>
         </div>
+
+        <StorageDisclaimer variant="full" />
 
         <section className="glass-panel rounded-3xl p-6 space-y-4 border border-cyan-400/20">
           <div className="flex items-center gap-2">
