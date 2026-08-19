@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   LayoutDashboard,
   Key,
@@ -23,7 +23,21 @@ import { useI18n } from '../context/I18nContext';
 const Sidebar = ({ activeSection, setActiveSection, onLock, vaultName }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useI18n();
+  const asideRef = useRef(null);
   const closeSidebar = () => setIsOpen(false);
+
+  useEffect(() => {
+    const node = asideRef.current;
+    if (!node) return undefined;
+    const mq = window.matchMedia('(min-width: 768px)');
+    const apply = () => {
+      if (mq.matches || isOpen) node.removeAttribute('inert');
+      else node.setAttribute('inert', '');
+    };
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, [isOpen]);
 
   const groups = [
     {
@@ -62,8 +76,8 @@ const Sidebar = ({ activeSection, setActiveSection, onLock, vaultName }) => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-50 p-3 glass-panel rounded-2xl text-white"
-        aria-label="Open menu"
+        className={`md:hidden fixed top-4 left-4 z-[60] p-3 glass-panel rounded-2xl text-white ${isOpen ? 'hidden' : ''}`}
+        aria-label={t('nav.openMenu')}
       >
         <Menu className="w-6 h-6" />
       </button>
@@ -71,6 +85,7 @@ const Sidebar = ({ activeSection, setActiveSection, onLock, vaultName }) => {
       {isOpen && <div className="md:hidden fixed inset-0 bg-black/50 z-40" onClick={closeSidebar} />}
 
       <aside
+        ref={asideRef}
         className={`${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } md:translate-x-0 fixed md:relative z-50 w-[17rem] h-screen sidebar-shell p-5 flex flex-col transition-transform duration-300 ease-in-out`}
@@ -81,11 +96,11 @@ const Sidebar = ({ activeSection, setActiveSection, onLock, vaultName }) => {
               <Lock className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-base font-semibold text-white truncate">{vaultName || 'Vault'}</h1>
+              <h1 className="text-base font-semibold text-white truncate">{vaultName || t('nav.vault')}</h1>
               <p className="text-[11px] text-cyan-200/60 tracking-wide">{t('nav.onDevice')}</p>
             </div>
           </div>
-          <button onClick={closeSidebar} className="md:hidden p-2 text-gray-400" aria-label="Close menu">
+          <button type="button" onClick={closeSidebar} className="md:hidden p-2 text-gray-400" aria-label={t('nav.closeMenu')}>
             <X className="w-5 h-5" />
           </button>
         </div>

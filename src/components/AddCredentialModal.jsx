@@ -23,7 +23,7 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
       setFormData(editData);
       setTags(editData.tags || []);
     } else {
-      const linked = defaultPersonId || people[0]?.id || '';
+      const linked = defaultPersonId || '';
       setFormData(type !== 'person' && linked ? { personId: linked } : {});
       setTags([]);
     }
@@ -186,6 +186,23 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
+  const requestClose = () => {
+    const dirty =
+      tags.length > 0 ||
+      Object.entries(formData).some(([key, value]) => key !== 'personId' && value !== undefined && value !== '' && value !== false);
+    if (dirty && !window.confirm(t('modal.discard'))) return;
+    onClose();
+  };
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const onKey = (event) => {
+      if (event.key === 'Escape') requestClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isOpen, formData, tags]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -195,6 +212,7 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={requestClose}
           />
           
           <motion.div
@@ -202,6 +220,7 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             className="relative glass-panel rounded-3xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
+            onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-white">
@@ -210,7 +229,7 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
               <button
                 type="button"
                 aria-label={t('common.cancel')}
-                onClick={onClose}
+                onClick={requestClose}
                 className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
               >
                 <X size={20} />
@@ -233,11 +252,15 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
                   </select>
                 </div>
               )}
-              {getFormFields().map((field) => (
+              {getFormFields().map((field) => {
+                const label = t(`field.${field.key}`);
+                return (
                 <div key={field.key}>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    {field.label} {field.required && <span className="text-red-400">*</span>}
-                  </label>
+                  {field.type !== 'checkbox' && (
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      {label} {field.required && <span className="text-red-400">*</span>}
+                    </label>
+                  )}
                   
                   {field.type === 'select' ? (
                     <select
@@ -246,10 +269,10 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
                       required={field.required}
                       className="field"
                     >
-                      <option value="">Select {field.label}</option>
+                      <option value="">{t('modal.select', { label })}</option>
                       {field.options.map((option) => (
                         <option key={option} value={option} className="bg-dark-800">
-                          {option}
+                          {t(`option.${option}`)}
                         </option>
                       ))}
                     </select>
@@ -260,7 +283,7 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
                       required={field.required}
                       rows={3}
                       className="field resize-none"
-                      placeholder={field.label}
+                      placeholder={label}
                     />
                   ) : field.type === 'checkbox' ? (
                     <label className="flex items-center gap-3 cursor-pointer">
@@ -270,7 +293,7 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
                         onChange={(e) => setFormData({ ...formData, [field.key]: e.target.checked })}
                         className="w-5 h-5 rounded border-white/10 bg-white/5 text-primary-600 focus:ring-primary-500"
                       />
-                      <span className="text-white">{field.label}</span>
+                      <span className="text-white">{label}</span>
                     </label>
                   ) : (
                     <div>
@@ -281,7 +304,7 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
                         required={field.required}
                         autoComplete="off"
                         className="field"
-                        placeholder={field.label}
+                        placeholder={label}
                       />
                       {field.type === 'password' && <PasswordStrengthMeter password={formData[field.key] || ''} />}
                       {(field.key === 'password' || field.key === 'netBankingPassword') && (
@@ -292,9 +315,10 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
 
-              {fieldError && <p className="text-red-400 text-sm">{fieldError}</p>}
+              {fieldError && <p className="text-red-400 text-sm">{t(fieldError)}</p>}
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">{t('modal.tags')}</label>
@@ -332,7 +356,7 @@ const AddCredentialModal = ({ isOpen, onClose, onSave, editData, type, defaultPe
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
-                  onClick={onClose}
+                  onClick={requestClose}
                   className="flex-1 px-4 py-3 text-white/50 border border-white/10 rounded-xl hover:bg-white/5 transition-colors"
                 >
                   {t('common.cancel')}

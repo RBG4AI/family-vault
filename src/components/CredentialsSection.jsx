@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { storage } from '../utils/storage';
@@ -28,10 +28,13 @@ const itemAmount = (item) => {
 
 const itemDate = (item) => item.updatedAt || item.createdAt || item.purchaseDate || item.maturityDate || null;
 
+const AMOUNT_TYPES = new Set(['investments', 'insurance', 'cards']);
+
 const inDateRange = (iso, range) => {
-  if (!range || !iso) return !range;
+  if (!range) return true;
+  if (!iso) return true;
   const then = new Date(iso).getTime();
-  if (Number.isNaN(then)) return false;
+  if (Number.isNaN(then)) return true;
   const days = { week: 7, month: 31, year: 366 }[range];
   if (!days) return true;
   return Date.now() - then <= days * 24 * 60 * 60 * 1000;
@@ -39,17 +42,16 @@ const inDateRange = (iso, range) => {
 
 const inAmountRange = (amount, range) => {
   if (!range) return true;
-  if (amount === null) return false;
+  if (amount === null) return true;
   if (range === '0-1000') return amount >= 0 && amount <= 1000;
-  if (range === '1000-10000') return amount > 1000 && amount <= 10000;
-  if (range === '10000+') return amount > 10000;
+  if (range === '1000-10000') return amount > 1000 && amount < 10000;
+  if (range === '10000+') return amount >= 10000;
   return true;
 };
 
 const CredentialsSection = ({ type, title }) => {
   const { t } = useI18n();
   const [items, setItems] = useState([]);
-  const [filteredItems, setFilteredItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState('All');
   const [advanced, setAdvanced] = useState({ dateRange: '', amountRange: '' });
@@ -75,7 +77,7 @@ const CredentialsSection = ({ type, title }) => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [loadItems]);
 
-  useEffect(() => {
+  const filteredItems = useMemo(() => {
     let filtered = items;
     if (searchTerm) {
       const q = searchTerm.toLowerCase();
@@ -92,7 +94,7 @@ const CredentialsSection = ({ type, title }) => {
     if (advanced.amountRange) {
       filtered = filtered.filter((item) => inAmountRange(itemAmount(item), advanced.amountRange));
     }
-    setFilteredItems(filtered);
+    return filtered;
   }, [items, searchTerm, selectedTag, advanced]);
 
   const handleSave = (data) => {
@@ -157,6 +159,7 @@ const CredentialsSection = ({ type, title }) => {
           tags={getAllTags()}
           selectedTag={selectedTag}
           onTagChange={setSelectedTag}
+          showAmount={AMOUNT_TYPES.has(type)}
         />
       )}
 

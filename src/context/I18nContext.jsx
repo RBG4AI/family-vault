@@ -37,6 +37,7 @@ export const I18nProvider = ({ children }) => {
 
   useEffect(() => {
     document.documentElement.lang = lang === 'hi' ? 'hi' : 'en';
+    document.title = lookup(TRANSLATIONS[lang], 'app.title') || lookup(TRANSLATIONS.en, 'app.title') || 'Family Vault';
   }, [lang]);
 
   const value = useMemo(() => ({ lang, setLang, t, languages: TRANSLATIONS }), [lang, setLang, t]);

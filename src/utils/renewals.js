@@ -1,7 +1,13 @@
 const daysFrom = (iso) => {
   if (!iso) return null;
-  const value = String(iso).length === 7 ? `${iso}-01` : iso;
-  const date = new Date(value);
+  const value = String(iso);
+  let date;
+  if (/^\d{4}-\d{2}$/.test(value)) {
+    const [year, month] = value.split('-').map(Number);
+    date = new Date(year, month, 0);
+  } else {
+    date = new Date(value.length === 7 ? `${value}-01` : value);
+  }
   if (Number.isNaN(date.getTime())) return null;
   const start = new Date();
   start.setHours(0, 0, 0, 0);

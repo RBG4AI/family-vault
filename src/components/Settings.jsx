@@ -10,6 +10,7 @@ import { useVaultContext } from '../context/VaultContext';
 import { storage } from '../utils/storage';
 import LanguageSwitch from './LanguageSwitch';
 import { useI18n } from '../context/I18nContext';
+import { vaultErrorText } from '../i18n/vaultErrors';
 
 const Settings = () => {
   const vault = useVaultContext();
@@ -55,7 +56,7 @@ const Settings = () => {
       setConfirmPassword('');
       setPasswordMessage(t('settings.passwordUpdated'));
     } catch (error) {
-      setPasswordMessage(error.message);
+      setPasswordMessage(vaultErrorText(error, t));
     }
   };
 
@@ -67,7 +68,7 @@ const Settings = () => {
       setRecoveryMessage('');
       setNewRecoveryKey(key);
     } catch (error) {
-      setRecoveryMessage(error.message);
+      setRecoveryMessage(vaultErrorText(error, t));
     }
   };
 
@@ -77,7 +78,12 @@ const Settings = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${vault.meta?.name || 'vault'}-backup.vault.json`;
+    const safeName = String(vault.meta?.name || 'vault')
+      .replace(/[^\p{L}\p{N}._-]+/gu, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+      .slice(0, 60) || 'vault';
+    link.download = `${safeName}-backup.vault.json`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -91,7 +97,7 @@ const Settings = () => {
       const meta = await vault.importEncryptedBackup(parsed);
       setImportMessage(t('settings.imported', { name: meta.name }));
     } catch (error) {
-      setImportMessage(error.message);
+      setImportMessage(vaultErrorText({ code: error.code || 'invalid_backup', message: error.message }, t));
     }
   };
 
@@ -101,7 +107,7 @@ const Settings = () => {
       await vault.destroyActiveVault(confirmName);
       await vault.backToList();
     } catch (error) {
-      setDestroyError(error.message);
+      setDestroyError(vaultErrorText(error, t));
     }
   };
 

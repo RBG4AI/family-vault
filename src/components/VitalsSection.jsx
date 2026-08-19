@@ -112,7 +112,9 @@ const VitalsSection = () => {
               <button
                 type="button"
                 aria-label={t('common.delete')}
-                onClick={() => remove(item.id)}
+                onClick={() => {
+                  if (window.confirm(t('vitals.confirmDelete'))) remove(item.id);
+                }}
                 className="p-2 text-white/40 hover:text-rose-300"
               >
                 <Trash2 size={14} />

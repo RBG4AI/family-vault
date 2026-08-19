@@ -65,7 +65,7 @@ export const findLegacyVaults = () => {
 
 export const verifyLegacyPassword = (legacyVault, password) => {
   const stored = legacyVault.packed?.masterPassword;
-  if (!stored) return true;
+  if (!stored || !password) return false;
   return stored === password;
 };
 

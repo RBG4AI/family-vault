@@ -1,12 +1,18 @@
 const COPY_CLEAR_MS = 30_000;
 
-export const copySecret = async (text) => {
+export const copyText = async (text) => {
   if (!text) return false;
   try {
     await navigator.clipboard.writeText(text);
+    return true;
   } catch {
     return false;
   }
+};
+
+export const copySecret = async (text) => {
+  const ok = await copyText(text);
+  if (!ok) return false;
 
   window.setTimeout(async () => {
     try {

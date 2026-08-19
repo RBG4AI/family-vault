@@ -3,7 +3,7 @@ import { Search, Filter } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '../context/I18nContext';
 
-const SmartSearch = ({ onSearch, onFilter, tags = [], selectedTag = 'All', onTagChange }) => {
+const SmartSearch = ({ onSearch, onFilter, tags = [], selectedTag = 'All', onTagChange, showAmount = false }) => {
   const { t } = useI18n();
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -68,7 +68,7 @@ const SmartSearch = ({ onSearch, onFilter, tags = [], selectedTag = 'All', onTag
             exit={{ opacity: 0, height: 0 }}
             className="glass-panel rounded-2xl p-4 space-y-3 overflow-hidden"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className={`grid grid-cols-1 ${showAmount ? 'md:grid-cols-2' : ''} gap-3`}>
               <select
                 value={filters.dateRange}
                 onChange={(e) => setFilters({ ...filters, dateRange: e.target.value })}
@@ -80,17 +80,19 @@ const SmartSearch = ({ onSearch, onFilter, tags = [], selectedTag = 'All', onTag
                 <option value="month">{t('search.month')}</option>
                 <option value="year">{t('search.year')}</option>
               </select>
-              <select
-                value={filters.amountRange}
-                onChange={(e) => setFilters({ ...filters, amountRange: e.target.value })}
-                className="field"
-                aria-label={t('search.anyAmount')}
-              >
-                <option value="">{t('search.anyAmount')}</option>
-                <option value="0-1000">₹0 – ₹1,000</option>
-                <option value="1000-10000">₹1,000 – ₹10,000</option>
-                <option value="10000+">₹10,000+</option>
-              </select>
+              {showAmount && (
+                <select
+                  value={filters.amountRange}
+                  onChange={(e) => setFilters({ ...filters, amountRange: e.target.value })}
+                  className="field"
+                  aria-label={t('search.anyAmount')}
+                >
+                  <option value="">{t('search.anyAmount')}</option>
+                  <option value="0-1000">₹0 – ₹1,000</option>
+                  <option value="1000-10000">₹1,000 – ₹10,000</option>
+                  <option value="10000+">₹10,000+</option>
+                </select>
+              )}
             </div>
           </motion.div>
         )}

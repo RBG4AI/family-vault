@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useI18n } from '../context/I18nContext';
+import { passwordScore } from '../crypto/vaultCrypto';
 
 const LEVELS = [
   { labelKey: 'strength.veryWeak', color: 'bg-red-500' },
@@ -10,21 +11,10 @@ const LEVELS = [
   { labelKey: 'strength.strong', color: 'bg-green-500' },
 ];
 
-const scorePassword = (pwd) => {
-  if (!pwd) return 0;
-  let score = 0;
-  if (pwd.length >= 10) score++;
-  if (/[a-z]/.test(pwd)) score++;
-  if (/[A-Z]/.test(pwd)) score++;
-  if (/[0-9]/.test(pwd)) score++;
-  if (/[^A-Za-z0-9]/.test(pwd)) score++;
-  return Math.min(score, 5);
-};
-
 const PasswordStrengthMeter = ({ password }) => {
   const { t } = useI18n();
   if (!password) return null;
-  const score = scorePassword(password);
+  const score = passwordScore(password);
   const level = LEVELS[Math.max(0, Math.min(score, 5) - 1)] || LEVELS[0];
   const filled = Math.max(score, 1);
 

@@ -16,7 +16,7 @@
     "start": "vite",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "pages": "vite build && rm -rf docs && cp -R dist docs && touch docs/.nojekyll",
+    "pages": "vite build && rm -rf docs && cp -R dist docs && printf 'Family Vault Pages\\n' > docs/.nojekyll",
     "app": "vite build && electron .",
     "standalone": "vite build && node scripts/build-standalone.js"
   },

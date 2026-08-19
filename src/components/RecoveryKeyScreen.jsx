@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Copy, Check, ShieldAlert } from 'lucide-react';
-import { copySecret } from '../utils/clipboard';
+import { copyText } from '../utils/clipboard';
 import { useI18n } from '../context/I18nContext';
 
 const RecoveryKeyScreen = ({ recoveryKey, onConfirm, onBack, title, body }) => {
@@ -10,7 +10,7 @@ const RecoveryKeyScreen = ({ recoveryKey, onConfirm, onBack, title, body }) => {
   const [saved, setSaved] = useState(false);
 
   const handleCopy = async () => {
-    const ok = await copySecret(recoveryKey);
+    const ok = await copyText(recoveryKey);
     if (ok) {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { useI18n } from '../context/I18nContext';
 
 const charset = {
@@ -27,6 +27,7 @@ const PasswordGenerator = ({ onUse }) => {
   const [length, setLength] = useState(18);
   const [options, setOptions] = useState({ lower: true, upper: true, numbers: true, symbols: true });
   const [value, setValue] = useState(() => generate(18, { lower: true, upper: true, numbers: true, symbols: true }));
+  const [revealed, setRevealed] = useState(false);
   const preview = useMemo(() => value, [value]);
 
   const refresh = () => setValue(generate(length, options));
@@ -39,7 +40,17 @@ const PasswordGenerator = ({ onUse }) => {
           <RefreshCw size={14} />
         </button>
       </div>
-      <p className="font-mono text-white text-sm break-all">{preview || '—'}</p>
+      <div className="flex items-start justify-between gap-2">
+        <p className="font-mono text-white text-sm break-all">{revealed ? preview || '—' : '•'.repeat(Math.min(18, preview.length || 12))}</p>
+        <button
+          type="button"
+          aria-label={revealed ? t('common.hide') : t('common.reveal')}
+          onClick={() => setRevealed((current) => !current)}
+          className="text-white/40 hover:text-white shrink-0"
+        >
+          {revealed ? <EyeOff size={14} /> : <Eye size={14} />}
+        </button>
+      </div>
       <input
         type="range"
         min="12"

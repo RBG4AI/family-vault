@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 export const useAutoLogout = (onLogout, timeoutMinutes = 2, enabled = true) => {
   const timeoutRef = useRef(null);
   const warningRef = useRef(null);
+  const lastActivityRef = useRef(Date.now());
   const [secondsLeft, setSecondsLeft] = useState(null);
   const onLogoutRef = useRef(onLogout);
   onLogoutRef.current = onLogout;
@@ -18,15 +19,19 @@ export const useAutoLogout = (onLogout, timeoutMinutes = 2, enabled = true) => {
     const clearTimers = () => {
       if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
       if (warningRef.current) window.clearInterval(warningRef.current);
+      timeoutRef.current = null;
+      warningRef.current = null;
     };
 
-    const startCountdown = () => {
-      setSecondsLeft(30);
+    const startCountdown = (from = 30) => {
+      const start = Math.max(1, Math.ceil(from));
+      setSecondsLeft(start);
       warningRef.current = window.setInterval(() => {
         setSecondsLeft((prev) => {
-          const next = (prev ?? 30) - 1;
+          const next = (prev ?? start) - 1;
           if (next <= 0) {
             window.clearInterval(warningRef.current);
+            warningRef.current = null;
             onLogoutRef.current();
             return null;
           }
@@ -35,24 +40,33 @@ export const useAutoLogout = (onLogout, timeoutMinutes = 2, enabled = true) => {
       }, 1000);
     };
 
-    const arm = () => {
+    const scheduleFromElapsed = () => {
       clearTimers();
       setSecondsLeft(null);
-      const warnAt = Math.max(0, timeoutMs - 30_000);
-      timeoutRef.current = window.setTimeout(startCountdown, warnAt);
+      const elapsed = Date.now() - lastActivityRef.current;
+      const remaining = timeoutMs - elapsed;
+      if (remaining <= 0) {
+        onLogoutRef.current();
+        return;
+      }
+      if (remaining <= 30_000) {
+        startCountdown(remaining / 1000);
+        return;
+      }
+      timeoutRef.current = window.setTimeout(() => startCountdown(30), remaining - 30_000);
     };
 
-    const events = ['mousedown', 'keydown', 'touchstart', 'scroll', 'pointerdown'];
-    events.forEach((event) => document.addEventListener(event, arm, true));
+    const arm = () => {
+      lastActivityRef.current = Date.now();
+      scheduleFromElapsed();
+    };
+
+    const events = ['mousedown', 'keydown', 'touchstart', 'scroll', 'pointerdown', 'wheel'];
+    events.forEach((event) => document.addEventListener(event, arm, { capture: true, passive: true }));
+    window.addEventListener('wheel', arm, { capture: true, passive: true });
 
     const onHidden = () => {
-      if (document.hidden) {
-        clearTimers();
-        setSecondsLeft(null);
-        timeoutRef.current = window.setTimeout(() => onLogoutRef.current(), timeoutMs);
-      } else {
-        arm();
-      }
+      scheduleFromElapsed();
     };
     document.addEventListener('visibilitychange', onHidden);
 
@@ -60,6 +74,7 @@ export const useAutoLogout = (onLogout, timeoutMinutes = 2, enabled = true) => {
 
     return () => {
       events.forEach((event) => document.removeEventListener(event, arm, true));
+      window.removeEventListener('wheel', arm, true);
       document.removeEventListener('visibilitychange', onHidden);
       clearTimers();
     };

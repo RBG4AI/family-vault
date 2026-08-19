@@ -14,8 +14,11 @@ import {
   updateMasterPassword,
   wipeDevice,
 } from '../storage/session';
+import { useI18n } from '../context/I18nContext';
+import { vaultErrorText } from '../i18n/vaultErrors';
 
 export const useVault = () => {
+  const { t } = useI18n();
   const [vaults, setVaults] = useState([]);
   const [phase, setPhase] = useState('loading');
   const [selectedId, setSelectedId] = useState(null);
@@ -39,7 +42,7 @@ export const useVault = () => {
         setPhase(items.length ? 'list' : 'create');
       } catch {
         if (!cancelled) {
-          setError('Could not open local vault storage.');
+          setError(vaultErrorText({ code: 'storage' }, t));
           setPhase('list');
         }
       }
@@ -68,7 +71,7 @@ export const useVault = () => {
   };
 
   const backToList = async () => {
-    lockVault();
+    await lockVault();
     setRecoveryKey('');
     setError('');
     setSelectedId(null);
@@ -81,11 +84,12 @@ export const useVault = () => {
     setError('');
     try {
       const created = await createVault({ name, kind, password });
+      setSelectedId(created.meta.id);
       setRecoveryKey(created.recoveryKey);
       setPhase('recovery-shown');
       await refreshVaults();
     } catch (err) {
-      setError(err.message || 'Could not create vault.');
+      setError(vaultErrorText({ ...err, code: err.code || 'create_failed' }, t));
     } finally {
       setBusy(false);
     }
@@ -101,6 +105,7 @@ export const useVault = () => {
     setError('');
     try {
       const result = await unlockVault(selectedId, password);
+      if (result.id) setSelectedId(result.id);
       if (result.migrated) {
         setRecoveryKey(result.recoveryKey);
         setPhase('recovery-shown');
@@ -108,7 +113,7 @@ export const useVault = () => {
         setPhase('unlocked');
       }
     } catch (err) {
-      setError(err.message || 'Unlock failed.');
+      setError(vaultErrorText(err, t));
     } finally {
       setBusy(false);
     }
@@ -121,14 +126,14 @@ export const useVault = () => {
       await unlockWithRecovery(selectedId, key, nextPassword);
       setPhase('unlocked');
     } catch (err) {
-      setError(err.message || 'Recovery failed.');
+      setError(vaultErrorText({ ...err, code: err.code || 'recovery_failed' }, t));
     } finally {
       setBusy(false);
     }
   };
 
   const lock = async () => {
-    lockVault();
+    await lockVault();
     setPhase(selectedId ? 'unlock' : 'list');
     await refreshVaults();
   };
@@ -145,6 +150,7 @@ export const useVault = () => {
       unlocked: session.unlocked,
       meta: session.meta,
       data: session.data,
+      persistError: session.persistError,
       selectVault,
       startCreate,
       startRecovery,
@@ -171,7 +177,7 @@ export const useVault = () => {
       },
       setError,
     }),
-    [vaults, phase, selectedId, error, busy, recoveryKey, session]
+    [vaults, phase, selectedId, error, busy, recoveryKey, session, t]
   );
 
   return value;

@@ -15,6 +15,20 @@ const initials = (name = '') =>
 
 const PERSON_BUCKETS = ['credentials', 'emails', 'banking', 'cards', 'government', 'insurance', 'investments', 'vehicles', 'properties', 'notes', 'vitals'];
 
+const linkedTitle = (item) =>
+  item.name ||
+  item.appName ||
+  item.emailAddress ||
+  item.bankName ||
+  item.cardType ||
+  item.documentType ||
+  item.title ||
+  item.registrationNumber ||
+  item.policyNumber ||
+  item.insuranceType ||
+  item.username ||
+  '';
+
 const linkedFor = (personId) =>
   PERSON_BUCKETS.flatMap((key) => (storage.get(key) || []).filter((item) => item.personId === personId).map((item) => ({ ...item, _kind: key })));
 
@@ -79,7 +93,7 @@ const PeopleSection = () => {
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-white font-semibold truncate">{person.name}</h3>
-                  <p className="text-white/45 text-sm truncate">{person.relation || t('nav.family')}{person.birthday ? ` · ${person.birthday}` : ''}</p>
+                  <p className="text-white/45 text-sm truncate">{[person.relation ? t(`option.${person.relation}`) : '', person.birthday].filter(Boolean).join(' · ')}</p>
                 </div>
               </div>
             </motion.button>
@@ -94,7 +108,7 @@ const PeopleSection = () => {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h2 className="text-2xl font-display text-white">{selectedPerson.name}</h2>
-                <p className="text-white/50 text-sm">{selectedPerson.relation || t('people.familyMember')}</p>
+                {selectedPerson.relation ? <p className="text-white/50 text-sm">{t(`option.${selectedPerson.relation}`)}</p> : null}
               </div>
               <button className="text-sm text-cyan-300" onClick={() => { setEdit(selectedPerson); setOpen(true); }}>{t('common.edit')}</button>
             </div>
@@ -103,7 +117,7 @@ const PeopleSection = () => {
               {linked.length === 0 && <p className="text-white/40 text-sm">{t('people.nothingLinked')}</p>}
               {linked.map((item) => (
                 <div key={item.id} className="bg-white/5 rounded-xl px-3 py-2 text-sm text-white/80">
-                  {t(`nav.${item._kind}`)} · {item.name || item.appName || item.documentType || item.title || item.registrationNumber || t('empty.addItem')}
+                  {t(`nav.${item._kind}`)} · {linkedTitle(item) || t('common.untitled')}
                 </div>
               ))}
             </div>

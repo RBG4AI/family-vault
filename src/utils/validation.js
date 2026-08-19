@@ -7,16 +7,16 @@ export const validateField = (key, value, context = {}) => {
   if (!text) return '';
 
   if (key === 'ifscCode' && !IFSC_RE.test(text)) {
-    return 'IFSC should look like HDFC0001234.';
+    return 'validation.ifsc';
   }
 
   if (key === 'documentNumber') {
     const type = context.documentType || '';
     if (type.includes('PAN') && !PAN_RE.test(text.replace(/\s/g, ''))) {
-      return 'PAN should be 5 letters, 4 digits, 1 letter.';
+      return 'validation.pan';
     }
     if (type.includes('Aadhaar') && !AADHAAR_RE.test(text.replace(/\s/g, ''))) {
-      return 'Aadhaar should be 12 digits.';
+      return 'validation.aadhaar';
     }
   }
 

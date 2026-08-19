@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAutoLogout } from './hooks/useAutoLogout';
 import { useVaultContext } from './context/VaultContext';
@@ -17,6 +17,7 @@ import OfflineIndicator from './components/OfflineIndicator';
 import AmbientBackground from './components/AmbientBackground';
 import { storage } from './utils/storage';
 import { useI18n } from './context/I18nContext';
+import { useToast } from './context/ToastContext';
 import { applyStoredTheme } from './components/ThemeToggle';
 
 applyStoredTheme();
@@ -24,6 +25,7 @@ applyStoredTheme();
 function App() {
   const vault = useVaultContext();
   const { t } = useI18n();
+  const { toast } = useToast();
   const [activeSection, setActiveSection] = useState('dashboard');
   const autoLockMinutes = vault.unlocked ? storage.get('settings')?.autoLockMinutes || 2 : 2;
   const secondsLeft = useAutoLogout(
@@ -32,13 +34,17 @@ function App() {
     vault.unlocked && vault.phase === 'unlocked'
   );
 
+  useEffect(() => {
+    if (vault.persistError) toast(t('common.saveFailed'));
+  }, [vault.persistError, t, toast]);
+
   if (!globalThis.isSecureContext || !globalThis.crypto?.subtle) {
     return (
       <AmbientBackground>
         <div className="min-h-screen flex items-center justify-center p-6 text-center text-white">
           <div className="max-w-md space-y-3 glass-panel rounded-3xl p-8">
-            <h1 className="font-display text-2xl">Secure context required</h1>
-            <p className="text-white/50">Open this vault on localhost or HTTPS so encryption can run in the browser.</p>
+            <h1 className="font-display text-2xl">{t('app.secureTitle')}</h1>
+            <p className="text-white/50">{t('app.secureBody')}</p>
           </div>
         </div>
       </AmbientBackground>

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Lock, Plus, Shield, Users, FileKey } from 'lucide-react';
 import LanguageSwitch from './LanguageSwitch';
 import { useI18n } from '../context/I18nContext';
+import { vaultErrorText } from '../i18n/vaultErrors';
 
 const VaultList = ({ vaults, onSelect, onCreate, onImport }) => {
   const { t } = useI18n();
@@ -17,7 +18,7 @@ const VaultList = ({ vaults, onSelect, onCreate, onImport }) => {
       await onImport(parsed);
       setImportError('');
     } catch (error) {
-      setImportError(error.message || t('list.importFailed'));
+      setImportError(vaultErrorText({ code: error.code || 'invalid_backup', message: error.message }, t));
     }
   };
 

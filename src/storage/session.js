@@ -10,6 +10,7 @@ import {
 } from '../crypto/vaultCrypto';
 import { deleteVaultRecord, getVaultRecord, listVaultRecords, saveVaultRecord } from './db.js';
 import { extractLegacyData, findLegacyVaults, verifyLegacyPassword, wipeAllLegacySecrets, wipeLegacyVault } from './legacy';
+import { taggedError } from '../i18n/vaultErrors';
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS = 30_000;
@@ -19,6 +20,7 @@ let envelope = null;
 let data = structuredClone(EMPTY_VAULT_DATA);
 let activeMeta = null;
 let persistChain = Promise.resolve();
+let persistError = null;
 
 const listeners = new Set();
 
@@ -33,15 +35,18 @@ const notify = () => {
 
 const assertUnlocked = () => {
   if (!dek || !envelope || !activeMeta) {
-    throw new Error('Vault is locked.');
+    throw taggedError('locked_vault', 'Vault is locked.');
   }
 };
 
 const queuePersist = (task) => {
-  persistChain = persistChain.then(task).catch((error) => {
-    notify();
-    throw error;
-  });
+  persistChain = persistChain
+    .catch(() => {})
+    .then(task)
+    .catch((error) => {
+      persistError = error.code || 'save_failed';
+      notify();
+    });
   return persistChain;
 };
 
@@ -50,6 +55,7 @@ export const getSessionSnapshot = () => ({
   data,
   meta: activeMeta,
   unlocked: Boolean(dek),
+  persistError,
 });
 
 export const listAllVaults = async () => {
@@ -67,6 +73,7 @@ const persistCurrent = () =>
       ...activeMeta,
       envelope,
     });
+    persistError = null;
     notify();
   });
 
@@ -93,7 +100,7 @@ export const createVault = async ({ name, kind, password }) => {
 const checkLockout = (record) => {
   if (record.lockedUntil && Date.now() < record.lockedUntil) {
     const seconds = Math.ceil((record.lockedUntil - Date.now()) / 1000);
-    throw new Error(`Too many attempts. Try again in ${seconds}s.`);
+    throw taggedError('locked', `Too many attempts. Try again in ${seconds}s.`, { seconds });
   }
 };
 
@@ -110,16 +117,16 @@ const registerFailure = async (record) => {
   }
   const remaining = MAX_ATTEMPTS - failedAttempts;
   if (lockedUntil) {
-    throw new Error('Too many attempts. Vault locked for 30 seconds.');
+    throw taggedError('locked', 'Too many attempts. Vault locked for 30 seconds.', { seconds: 30 });
   }
-  throw new Error(remaining > 0 ? `Wrong password. ${remaining} attempts left.` : 'Wrong password.');
+  throw taggedError('wrong_password', remaining > 0 ? `Wrong password. ${remaining} attempts left.` : 'Wrong password.', { remaining });
 };
 
 export const unlockVault = async (id, password) => {
   const legacyMatch = findLegacyVaults().find((item) => item.id === id);
   if (legacyMatch) {
     if (!verifyLegacyPassword(legacyMatch, password)) {
-      throw new Error('Wrong master password.');
+      throw taggedError('wrong_master', 'Wrong master password.');
     }
     const migratedData = extractLegacyData(legacyMatch);
     const created = await createEnvelope(password, migratedData);
@@ -139,11 +146,11 @@ export const unlockVault = async (id, password) => {
     data = hydrateVaultData(created.data);
     activeMeta = meta;
     notify();
-    return { migrated: true, recoveryKey: created.recoveryKey };
+    return { migrated: true, recoveryKey: created.recoveryKey, id: meta.id };
   }
 
   const record = await getVaultRecord(id);
-  if (!record) throw new Error('Vault not found.');
+  if (!record) throw taggedError('not_found', 'Vault not found.');
   checkLockout(record);
 
   try {
@@ -171,7 +178,7 @@ export const unlockVault = async (id, password) => {
 
 export const unlockWithRecovery = async (id, recoveryKey, nextPassword) => {
   const record = await getVaultRecord(id);
-  if (!record) throw new Error('Vault not found.');
+  if (!record) throw taggedError('not_found', 'Vault not found.');
   const reset = await resetPasswordWithRecovery(record.envelope, recoveryKey, nextPassword);
   dek = reset.dek;
   envelope = reset.envelope;
@@ -189,11 +196,17 @@ export const unlockWithRecovery = async (id, recoveryKey, nextPassword) => {
   notify();
 };
 
-export const lockVault = () => {
+export const lockVault = async ({ persist = true } = {}) => {
+  try {
+    if (persist && dek) await persistChain;
+  } catch {
+    /* Still wipe keys from memory. */
+  }
   dek = null;
   envelope = null;
   data = structuredClone(EMPTY_VAULT_DATA);
   activeMeta = null;
+  persistError = null;
   notify();
 };
 
@@ -241,12 +254,24 @@ export const exportEncryptedBackup = async () => {
 
 export const importEncryptedBackup = async (backup) => {
   if (backup?.app !== 'family-vault' || !backup?.vault?.envelope) {
-    throw new Error('Not a valid Vault backup file.');
+    throw taggedError('invalid_backup', 'Not a valid Vault backup file.');
   }
   const source = backup.vault;
+  const existing = await listVaultRecords();
+  const names = new Set(existing.map((item) => item.name));
+  const root = (source.name || 'Imported vault').trim() || 'Imported vault';
+  let name = root;
+  if (names.has(name)) {
+    name = `${root} (imported)`;
+    let n = 2;
+    while (names.has(name)) {
+      name = `${root} (imported ${n})`;
+      n += 1;
+    }
+  }
   const meta = {
     id: crypto.randomUUID(),
-    name: `${source.name || 'Imported vault'}`,
+    name,
     kind: source.kind || 'personal',
     createdAt: source.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -260,19 +285,18 @@ export const importEncryptedBackup = async (backup) => {
 export const destroyActiveVault = async (confirmName) => {
   assertUnlocked();
   if (confirmName.trim() !== activeMeta.name) {
-    throw new Error('Vault name does not match.');
+    throw taggedError('name_mismatch', 'Vault name does not match.');
   }
   const id = activeMeta.id;
-  lockVault();
   await deleteVaultRecord(id);
-  notify();
+  await lockVault({ persist: false });
 };
 
 export const wipeDevice = async () => {
   const records = await listVaultRecords();
   await Promise.all(records.map((record) => deleteVaultRecord(record.id)));
   wipeAllLegacySecrets();
-  lockVault();
+  await lockVault({ persist: false });
 };
 
 export { EMPTY_VAULT_DATA };
