@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Eye, EyeOff, Lock } from 'lucide-react';
 import { useI18n } from '../context/I18nContext';
@@ -9,6 +9,7 @@ const UnlockScreen = ({ vault, onUnlock, onBack, onRecovery, busy, error }) => {
   const { t } = useI18n();
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
+  const passwordRef = useRef(null);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -49,19 +50,22 @@ const UnlockScreen = ({ vault, onUnlock, onBack, onRecovery, busy, error }) => {
 
         <div className="relative">
           <SecretInput
+            ref={passwordRef}
             type={show ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder={t('unlock.password')}
-            autoFocus
             name="fv-master"
             className="field pr-12"
           />
           <button
             type="button"
             aria-label={show ? t('common.hidePassword') : t('common.showPassword')}
-            onClick={() => setShow(!show)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40"
+            onClick={() => {
+              setShow((current) => !current);
+              passwordRef.current?.focus();
+            }}
+            className="absolute right-1 top-1/2 -translate-y-1/2 p-3 text-white/40"
           >
             {show ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>

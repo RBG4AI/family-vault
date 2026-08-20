@@ -106,7 +106,7 @@ const CreateVault = ({ onCreate, onBack, busy, error }) => {
               type="button"
               aria-label={showPassword ? t('common.hidePassword') : t('common.showPassword')}
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40"
+              className="absolute right-1 top-1/2 -translate-y-1/2 p-3 text-white/40"
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
@@ -128,7 +128,7 @@ const CreateVault = ({ onCreate, onBack, busy, error }) => {
               type="button"
               aria-label={showConfirm ? t('common.hideConfirm') : t('common.showConfirm')}
               onClick={() => setShowConfirm(!showConfirm)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40"
+              className="absolute right-1 top-1/2 -translate-y-1/2 p-3 text-white/40"
             >
               {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
